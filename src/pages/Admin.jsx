@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { getProducts, setProducts, getCategories, setCategories, getOrders, setOrders } from '../utils/storage'
-import { listenToOrders, updateOrderStatus } from '../utils/firebase'
+import { listenToOrders, updateOrderStatus, getOrdersOnce } from '../utils/firebase'
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('products')
@@ -23,41 +23,70 @@ function Admin() {
     loadData()
     
     // Set up real-time listener for orders
+    console.log("Setting up Firebase listener in Admin component");
     const unsubscribe = listenToOrders((updatedOrders) => {
-      setOrdersState(updatedOrders)
-      // Also update localStorage for compatibility
-      setOrders(updatedOrders)
-    })
+      console.log("Received orders update in Admin component:", updatedOrders);
+      if (updatedOrders && updatedOrders.length > 0) {
+        setOrdersState(updatedOrders);
+        // Also update localStorage for compatibility
+        setOrders(updatedOrders);
+      }
+    });
     
     // Clean up listener on component unmount
     return () => {
-      if (unsubscribe) unsubscribe()
+      console.log("Cleaning up Firebase listener");
+      if (unsubscribe) unsubscribe();
     }
-  }, [])
+  }, []);
 
-  const loadData = () => {
-    setProductsState(getProducts())
-    setCategoriesState(getCategories())
-    setOrdersState(getOrders())
+  const loadData = async () => {
+    setProductsState(getProducts());
+    setCategoriesState(getCategories());
+    
+    // Try to get orders from Firebase first
+    try {
+      console.log("Attempting to load orders from Firebase");
+      const firebaseOrders = await getOrdersOnce();
+      console.log("Orders from Firebase:", firebaseOrders);
+      
+      if (firebaseOrders && firebaseOrders.length > 0) {
+        setOrdersState(firebaseOrders);
+        // Also update localStorage for compatibility
+        setOrders(firebaseOrders);
+      } else {
+        // Fall back to localStorage if no orders in Firebase
+        console.log("No orders in Firebase, falling back to localStorage");
+        const localOrders = getOrders();
+        setOrdersState(localOrders);
+      }
+    } catch (error) {
+      console.error("Error loading orders from Firebase:", error);
+      // Fall back to localStorage on error
+      const localOrders = getOrders();
+      setOrdersState(localOrders);
+    }
   }
 
   // Order status management
   const handleOrderStatusChange = (orderId, newStatus) => {
+    console.log(`Changing order ${orderId} status to ${newStatus}`);
+    
     // Update in Firebase (real-time)
     updateOrderStatus(orderId, newStatus)
       .then(() => {
-        console.log(`Order ${orderId} status updated to ${newStatus}`)
+        console.log(`Order ${orderId} status updated to ${newStatus} in Firebase`);
       })
       .catch(error => {
-        console.error("Error updating order status:", error)
-      })
+        console.error("Error updating order status in Firebase:", error);
+      });
     
     // Also update local state for immediate UI feedback
     const updatedOrders = orders.map(order => 
       order.id === orderId ? { ...order, status: newStatus } : order
-    )
-    setOrdersState(updatedOrders)
-    setOrders(updatedOrders) // Update localStorage for compatibility
+    );
+    setOrdersState(updatedOrders);
+    setOrders(updatedOrders); // Update localStorage for compatibility
   }
 
   // Sorting functionality

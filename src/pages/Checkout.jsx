@@ -52,13 +52,19 @@ function Checkout() {
     }
 
     try {
+      console.log("Submitting order:", order);
+      
       // Save order to Firebase (for real-time updates)
+      console.log("Saving order to Firebase...");
       await saveOrder(order)
+      console.log("Order saved to Firebase successfully");
       
       // Also save to localStorage for compatibility
+      console.log("Saving order to localStorage...");
       const orders = JSON.parse(localStorage.getItem('store_orders') || '[]')
       orders.push(order)
       setOrders(orders)
+      console.log("Order saved to localStorage successfully");
 
       // Format items for email
       const formattedItems = order.items.map(item => 
@@ -80,30 +86,35 @@ function Checkout() {
       }
 
       // Send email to store owner
+      console.log("Sending email to store owner...");
       await emailjs.send(
-        'service_scvfp6q', // Replace with your EmailJS service ID
-        'template_jqnqrmr', // Replace with your EmailJS template ID for store owner
+        'service_scvfp6q',
+        'template_jqnqrmr',
         {
-          to_email: 'netamal3134@gmail.com', // Replace with store email
+          to_email: 'netamal3134@gmail.com',
           subject: `הזמנה חדשה #${order.id}`,
           ...emailData
         },
-        'wdkhxkDvY1CBqWjhm' // Replace with your EmailJS public key
+        'wdkhxkDvY1CBqWjhm'
       )
+      console.log("Email sent to store owner successfully");
 
       // Send confirmation email to customer
+      console.log("Sending confirmation email to customer...");
       await emailjs.send(
-        'service_scvfp6q', // Replace with your EmailJS service ID
-        'template_9gyc9gb', // Replace with your EmailJS template ID for customer
+        'service_scvfp6q',
+        'template_9gyc9gb',
         {
           to_email: order.email,
           subject: `אישור הזמנה #${order.id}`,
           ...emailData
         },
-        'wdkhxkDvY1CBqWjhm' // Replace with your EmailJS public key
+        'wdkhxkDvY1CBqWjhm'
       )
+      console.log("Confirmation email sent to customer successfully");
 
       // Clear cart and redirect to success page
+      console.log("Clearing cart and redirecting to success page...");
       clearCart()
       navigate('/order-success', { state: { orderId: order.id } })
     } catch (error) {

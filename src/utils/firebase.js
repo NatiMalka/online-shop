@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get, onValue, push, remove } from "firebase/database";
+import { getDatabase, ref, set, get, onValue, push, remove, update } from "firebase/database";
 
 // Your web app's Firebase configuration
 // Replace with your actual Firebase config
@@ -9,9 +9,9 @@ const firebaseConfig = {
   authDomain: "online-shop-21f83.firebaseapp.com",
   databaseURL: "https://online-shop-21f83-default-rtdb.firebaseio.com",
   projectId: "online-shop-21f83",
-  storageBucket: "online-shop-21f83.firebasestorage.app",
+  storageBucket: "online-shop-21f83.appspot.com",
   messagingSenderId: "1043265038518",
-  appId: "G-W3VLYQE06G"
+  appId: "1:1043265038518:web:ee3ef45664e4e4c5895e17" // You should replace this with your actual Firebase App ID
 };
 
 // Initialize Firebase
@@ -20,6 +20,7 @@ const database = getDatabase(app);
 
 // Orders
 export const saveOrder = (order) => {
+  console.log("Saving order to Firebase:", order); // Add logging
   const ordersRef = ref(database, 'orders');
   const newOrderRef = push(ordersRef);
   return set(newOrderRef, {
@@ -30,6 +31,7 @@ export const saveOrder = (order) => {
 };
 
 export const getOrdersOnce = async () => {
+  console.log("Getting orders from Firebase"); // Add logging
   const ordersRef = ref(database, 'orders');
   const snapshot = await get(ordersRef);
   
@@ -45,24 +47,29 @@ export const getOrdersOnce = async () => {
 };
 
 export const listenToOrders = (callback) => {
+  console.log("Setting up real-time listener for orders"); // Add logging
   const ordersRef = ref(database, 'orders');
   return onValue(ordersRef, (snapshot) => {
+    console.log("Received order update from Firebase"); // Add logging
     if (snapshot.exists()) {
       const ordersData = snapshot.val();
       const ordersList = Object.keys(ordersData).map(key => ({
         ...ordersData[key],
         id: key
       }));
+      console.log("Orders from Firebase:", ordersList); // Add logging
       callback(ordersList);
     } else {
+      console.log("No orders found in Firebase"); // Add logging
       callback([]);
     }
   });
 };
 
 export const updateOrderStatus = (orderId, status) => {
+  console.log(`Updating order ${orderId} status to ${status}`); // Add logging
   const orderRef = ref(database, `orders/${orderId}`);
-  return set(orderRef, { status });
+  return update(orderRef, { status }); // Use update instead of set to only update the status field
 };
 
 // Products
