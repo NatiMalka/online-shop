@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
@@ -25,6 +25,7 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/admin" element={isAdmin ? <Admin /> : <Home />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>
