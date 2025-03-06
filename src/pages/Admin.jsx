@@ -260,12 +260,20 @@ function Admin() {
   const summary = calculateSummary()
 
   return (
-    <div className="space-y-8">
-      <h2 className="text-2xl font-bold">לוח בקרה</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg p-6 mb-8">
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl font-bold text-white">לוח בקרה</h2>
+          <div className="bg-white bg-opacity-20 rounded-lg px-4 py-2 text-white">
+            <div className="text-sm opacity-80">היום</div>
+            <div className="font-medium">{new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+          </div>
+        </div>
+      </div>
 
       {/* Firebase Error Message */}
       {firebaseError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
           <strong className="font-bold">שגיאת התחברות: </strong>
           <span className="block sm:inline">{firebaseError}</span>
           <button 
@@ -278,46 +286,58 @@ function Admin() {
       )}
 
       {/* Tabs */}
-      <div className="border-b">
-        <nav className="flex space-x-4 space-x-reverse">
+      <div className="mb-8">
+        <nav className="flex flex-wrap gap-2">
           <button
             onClick={() => setActiveTab('products')}
-            className={`px-4 py-2 ${
+            className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 flex items-center ${
               activeTab === 'products'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
             מוצרים
           </button>
           <button
             onClick={() => setActiveTab('categories')}
-            className={`px-4 py-2 ${
+            className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 flex items-center ${
               activeTab === 'categories'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
             קטגוריות
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 ${
+            className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 flex items-center ${
               activeTab === 'orders'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
             הזמנות
           </button>
           <button
             onClick={() => setActiveTab('summary')}
-            className={`px-4 py-2 ${
+            className={`px-5 py-3 rounded-lg font-medium transition-all duration-200 flex items-center ${
               activeTab === 'summary'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
             סיכום
           </button>
         </nav>
@@ -713,102 +733,157 @@ function Admin() {
 
       {/* Summary Tab */}
       {activeTab === 'summary' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-2">סיכום הזמנות</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">סה"כ הזמנות:</span>
-                  <span className="font-medium">{summary.totalOrders}</span>
+        <div className="space-y-8">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Orders Summary Card */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-xl shadow-lg border border-blue-100 transform transition-all duration-300 hover:scale-105">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-indigo-800">סיכום הזמנות</h3>
+                <div className="p-2 bg-white bg-opacity-80 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">הזמנות חדשות:</span>
-                  <span className="font-medium">{summary.newOrders}</span>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">סה"כ הזמנות:</span>
+                  <span className="text-xl font-bold text-indigo-800">{summary.totalOrders}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">הזמנות בתהליך:</span>
-                  <span className="font-medium">{summary.inProcessOrders}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">הזמנות חדשות:</span>
+                  <div className="flex items-center">
+                    <span className="text-lg font-bold text-green-600">{summary.newOrders}</span>
+                    {summary.newOrders > 0 && (
+                      <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">חדש</span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">הזמנות שהושלמו:</span>
-                  <span className="font-medium">{summary.completedOrders}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">הזמנות בתהליך:</span>
+                  <span className="text-lg font-bold text-yellow-600">{summary.inProcessOrders}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">הזמנות שהושלמו:</span>
+                  <span className="text-lg font-bold text-blue-600">{summary.completedOrders}</span>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-2">סיכום כספי</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">סה"כ הכנסות:</span>
-                  <span className="font-medium">₪{summary.totalIncome.toFixed(2)}</span>
+            {/* Financial Summary Card */}
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-100 p-6 rounded-xl shadow-lg border border-emerald-100 transform transition-all duration-300 hover:scale-105">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-teal-800">סיכום כספי</h3>
+                <div className="p-2 bg-white bg-opacity-80 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">ממוצע להזמנה:</span>
-                  <span className="font-medium">
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">סה"כ הכנסות:</span>
+                  <span className="text-xl font-bold text-teal-800">₪{summary.totalIncome.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">ממוצע להזמנה:</span>
+                  <span className="text-lg font-bold text-teal-700">
                     ₪{summary.totalOrders > 0 
                       ? (summary.totalIncome / summary.totalOrders).toFixed(2) 
                       : '0.00'}
                   </span>
                 </div>
+                <div className="mt-4 pt-4 border-t border-teal-200">
+                  <div className="text-center">
+                    <span className="text-sm text-teal-700">הכנסה חודשית משוערת</span>
+                    <div className="text-2xl font-bold text-teal-800 mt-1">
+                      ₪{(summary.totalIncome / (summary.totalOrders ? summary.totalOrders : 1) * 30).toFixed(2)}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-2">סטטיסטיקה</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">מספר מוצרים:</span>
-                  <span className="font-medium">{products.length}</span>
+            {/* Statistics Card */}
+            <div className="bg-gradient-to-br from-purple-50 to-fuchsia-100 p-6 rounded-xl shadow-lg border border-purple-100 transform transition-all duration-300 hover:scale-105">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-purple-800">סטטיסטיקה</h3>
+                <div className="p-2 bg-white bg-opacity-80 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">מספר קטגוריות:</span>
-                  <span className="font-medium">{categories.length}</span>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">מספר מוצרים:</span>
+                  <span className="text-xl font-bold text-purple-800">{products.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">מספר קטגוריות:</span>
+                  <span className="text-xl font-bold text-purple-800">{categories.length}</span>
+                </div>
+                <div className="mt-4 pt-4 border-t border-purple-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700">יחס מוצרים לקטגוריה:</span>
+                    <span className="text-lg font-bold text-purple-700">
+                      {categories.length > 0 
+                        ? (products.length / categories.length).toFixed(1) 
+                        : '0'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-4">מוצרים מובילים</h3>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    שם המוצר
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    כמות שנמכרה
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    סה"כ הכנסות
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {summary.topProducts.map((product, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {product.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.quantity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ₪{product.total.toFixed(2)}
-                    </td>
+          {/* Top Products Table */}
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800">מוצרים מובילים</h3>
+              <div className="text-sm text-gray-500">5 המוצרים הנמכרים ביותר</div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg">
+                      שם המוצר
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      כמות שנמכרה
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">
+                      סה"כ הכנסות
+                    </th>
                   </tr>
-                ))}
-                {summary.topProducts.length === 0 && (
-                  <tr>
-                    <td colSpan="3" className="px-6 py-4 text-center text-sm text-gray-500">
-                      אין נתונים זמינים
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {summary.topProducts.map((product, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <span className="text-indigo-600 font-bold">{index + 1}</span>
+                          </div>
+                          <div className="mr-4">
+                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 font-semibold">{product.quantity}</div>
+                        <div className="text-xs text-gray-500">יחידות</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-bold text-emerald-600">₪{product.total.toFixed(2)}</div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
