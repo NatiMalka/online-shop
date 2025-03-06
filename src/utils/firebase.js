@@ -18,58 +18,102 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
+// Helper function to handle Firebase errors
+const handleFirebaseError = (error, fallbackValue, operation) => {
+  console.error(`Firebase error during ${operation}:`, error);
+  
+  if (error.message && error.message.includes("Permission denied")) {
+    console.warn(`Firebase permission denied during ${operation}. Please check your Firebase security rules.`);
+    console.warn("You may need to update your Firebase security rules to allow read/write access.");
+    console.warn("Example rules for development: { \"rules\": { \".read\": true, \".write\": true } }");
+  }
+  
+  return fallbackValue;
+};
+
 // Orders
-export const saveOrder = (order) => {
-  console.log("Saving order to Firebase:", order); // Add logging
-  const ordersRef = ref(database, 'orders');
-  const newOrderRef = push(ordersRef);
-  return set(newOrderRef, {
-    ...order,
-    id: newOrderRef.key,
-    timestamp: Date.now()
-  });
+export const saveOrder = async (order) => {
+  console.log("Saving order to Firebase:", order);
+  try {
+    const ordersRef = ref(database, 'orders');
+    const newOrderRef = push(ordersRef);
+    await set(newOrderRef, {
+      ...order,
+      id: newOrderRef.key,
+      timestamp: Date.now()
+    });
+    console.log("Order saved to Firebase successfully with ID:", newOrderRef.key);
+    return newOrderRef.key;
+  } catch (error) {
+    handleFirebaseError(error, null, "saveOrder");
+    throw error; // Re-throw to allow caller to handle
+  }
 };
 
 export const getOrdersOnce = async () => {
-  console.log("Getting orders from Firebase"); // Add logging
-  const ordersRef = ref(database, 'orders');
-  const snapshot = await get(ordersRef);
-  
-  if (snapshot.exists()) {
-    const ordersData = snapshot.val();
-    return Object.keys(ordersData).map(key => ({
-      ...ordersData[key],
-      id: key
-    }));
-  }
-  
-  return [];
-};
-
-export const listenToOrders = (callback) => {
-  console.log("Setting up real-time listener for orders"); // Add logging
-  const ordersRef = ref(database, 'orders');
-  return onValue(ordersRef, (snapshot) => {
-    console.log("Received order update from Firebase"); // Add logging
+  console.log("Getting orders from Firebase");
+  try {
+    const ordersRef = ref(database, 'orders');
+    const snapshot = await get(ordersRef);
+    
     if (snapshot.exists()) {
       const ordersData = snapshot.val();
       const ordersList = Object.keys(ordersData).map(key => ({
         ...ordersData[key],
         id: key
       }));
-      console.log("Orders from Firebase:", ordersList); // Add logging
-      callback(ordersList);
-    } else {
-      console.log("No orders found in Firebase"); // Add logging
-      callback([]);
+      console.log(`Retrieved ${ordersList.length} orders from Firebase`);
+      return ordersList;
     }
-  });
+    
+    console.log("No orders found in Firebase");
+    return [];
+  } catch (error) {
+    return handleFirebaseError(error, [], "getOrdersOnce");
+  }
 };
 
-export const updateOrderStatus = (orderId, status) => {
-  console.log(`Updating order ${orderId} status to ${status}`); // Add logging
-  const orderRef = ref(database, `orders/${orderId}`);
-  return update(orderRef, { status }); // Use update instead of set to only update the status field
+export const listenToOrders = (callback) => {
+  console.log("Setting up real-time listener for orders");
+  try {
+    const ordersRef = ref(database, 'orders');
+    const unsubscribe = onValue(ordersRef, (snapshot) => {
+      console.log("Received order update from Firebase");
+      if (snapshot.exists()) {
+        const ordersData = snapshot.val();
+        const ordersList = Object.keys(ordersData).map(key => ({
+          ...ordersData[key],
+          id: key
+        }));
+        console.log(`Real-time update: ${ordersList.length} orders from Firebase`);
+        callback(ordersList);
+      } else {
+        console.log("No orders found in Firebase (real-time update)");
+        callback([]);
+      }
+    }, (error) => {
+      console.error("Error in Firebase real-time listener:", error);
+      callback([]);
+    });
+    
+    return unsubscribe;
+  } catch (error) {
+    handleFirebaseError(error, null, "listenToOrders");
+    return () => {}; // Return empty function as fallback
+  }
+};
+
+export const updateOrderStatus = async (orderId, status) => {
+  console.log(`Updating order ${orderId} status to ${status}`);
+  try {
+    const orderRef = ref(database, `orders/${orderId}`);
+    await update(orderRef, { status });
+    console.log(`Order ${orderId} status updated successfully`);
+    return true;
+  } catch (error) {
+    handleFirebaseError(error, false, "updateOrderStatus");
+    throw error;
+  }
 };
 
 // Products

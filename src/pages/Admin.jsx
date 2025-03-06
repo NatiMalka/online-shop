@@ -18,20 +18,30 @@ function Admin() {
   })
   const [orderSort, setOrderSort] = useState({ field: 'id', direction: 'desc' })
   const [orderStatusFilter, setOrderStatusFilter] = useState('all')
+  const [firebaseError, setFirebaseError] = useState(null)
 
   useEffect(() => {
     loadData()
     
     // Set up real-time listener for orders
     console.log("Setting up Firebase listener in Admin component");
-    const unsubscribe = listenToOrders((updatedOrders) => {
-      console.log("Received orders update in Admin component:", updatedOrders);
-      if (updatedOrders && updatedOrders.length > 0) {
-        setOrdersState(updatedOrders);
-        // Also update localStorage for compatibility
-        setOrders(updatedOrders);
-      }
-    });
+    let unsubscribe = null;
+    
+    try {
+      unsubscribe = listenToOrders((updatedOrders) => {
+        console.log("Received orders update in Admin component:", updatedOrders);
+        if (updatedOrders && updatedOrders.length > 0) {
+          setOrdersState(updatedOrders);
+          // Also update localStorage for compatibility
+          setOrders(updatedOrders);
+          // Clear any previous Firebase error
+          setFirebaseError(null);
+        }
+      });
+    } catch (error) {
+      console.error("Error setting up Firebase listener:", error);
+      setFirebaseError("Failed to connect to the orders database. Please check your internet connection and Firebase configuration.");
+    }
     
     // Clean up listener on component unmount
     return () => {
@@ -54,6 +64,8 @@ function Admin() {
         setOrdersState(firebaseOrders);
         // Also update localStorage for compatibility
         setOrders(firebaseOrders);
+        // Clear any previous Firebase error
+        setFirebaseError(null);
       } else {
         // Fall back to localStorage if no orders in Firebase
         console.log("No orders in Firebase, falling back to localStorage");
@@ -62,6 +74,7 @@ function Admin() {
       }
     } catch (error) {
       console.error("Error loading orders from Firebase:", error);
+      setFirebaseError("Failed to load orders from the database. Please check your internet connection and Firebase configuration.");
       // Fall back to localStorage on error
       const localOrders = getOrders();
       setOrdersState(localOrders);
@@ -76,9 +89,12 @@ function Admin() {
     updateOrderStatus(orderId, newStatus)
       .then(() => {
         console.log(`Order ${orderId} status updated to ${newStatus} in Firebase`);
+        // Clear any previous Firebase error
+        setFirebaseError(null);
       })
       .catch(error => {
         console.error("Error updating order status in Firebase:", error);
+        setFirebaseError("Failed to update order status in the database. The change was applied locally only.");
       });
     
     // Also update local state for immediate UI feedback
@@ -246,6 +262,20 @@ function Admin() {
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold">לוח בקרה</h2>
+
+      {/* Firebase Error Message */}
+      {firebaseError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">שגיאת התחברות: </strong>
+          <span className="block sm:inline">{firebaseError}</span>
+          <button 
+            className="absolute top-0 bottom-0 right-0 px-4 py-3"
+            onClick={() => setFirebaseError(null)}
+          >
+            <span className="text-xl">&times;</span>
+          </button>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b">
@@ -583,6 +613,14 @@ function Admin() {
                 <option value="הושלם">הושלם</option>
               </select>
             </div>
+            
+            {/* Refresh Button */}
+            <button
+              onClick={() => loadData()}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm"
+            >
+              רענן נתונים
+            </button>
           </div>
           
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
