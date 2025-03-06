@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { getProducts, setProducts, getCategories, setCategories, getOrders } from '../utils/storage'
+import { getProducts, setProducts, getCategories, setCategories, getOrders, setOrders } from '../utils/storage'
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('products')
   const [products, setProductsState] = useState([])
   const [categories, setCategoriesState] = useState([])
-  const [orders, setOrders] = useState([])
+  const [orders, setOrdersState] = useState([])
   const [editingProduct, setEditingProduct] = useState(null)
   const [editingCategory, setEditingCategory] = useState(null)
   const [formData, setFormData] = useState({
@@ -15,6 +15,8 @@ function Admin() {
     image: '',
     categoryId: ''
   })
+  const [orderSort, setOrderSort] = useState({ field: 'id', direction: 'desc' })
+  const [orderStatusFilter, setOrderStatusFilter] = useState('all')
 
   useEffect(() => {
     loadData()
@@ -23,7 +25,81 @@ function Admin() {
   const loadData = () => {
     setProductsState(getProducts())
     setCategoriesState(getCategories())
-    setOrders(getOrders())
+    setOrdersState(getOrders())
+  }
+
+  // Order status management
+  const handleOrderStatusChange = (orderId, newStatus) => {
+    const updatedOrders = orders.map(order => 
+      order.id === orderId ? { ...order, status: newStatus } : order
+    )
+    setOrders(updatedOrders)
+    setOrdersState(updatedOrders)
+  }
+
+  // Sorting functionality
+  const handleOrderSort = (field) => {
+    const newDirection = orderSort.field === field && orderSort.direction === 'asc' ? 'desc' : 'asc'
+    setOrderSort({ field, direction: newDirection })
+  }
+
+  const getSortedOrders = () => {
+    const filteredOrders = orderStatusFilter === 'all' 
+      ? orders 
+      : orders.filter(order => order.status === orderStatusFilter)
+    
+    return [...filteredOrders].sort((a, b) => {
+      let comparison = 0
+      
+      if (orderSort.field === 'id') {
+        comparison = parseInt(a.id) - parseInt(b.id)
+      } else if (orderSort.field === 'date') {
+        comparison = new Date(a.deliveryDate) - new Date(b.deliveryDate)
+      } else if (orderSort.field === 'total') {
+        comparison = parseFloat(a.total) - parseFloat(b.total)
+      } else if (orderSort.field === 'name') {
+        comparison = a.name.localeCompare(b.name)
+      }
+      
+      return orderSort.direction === 'asc' ? comparison : -comparison
+    })
+  }
+
+  // Calculate summary statistics
+  const calculateSummary = () => {
+    const totalOrders = orders.length
+    const totalIncome = orders.reduce((sum, order) => sum + parseFloat(order.total), 0)
+    const completedOrders = orders.filter(order => order.status === 'הושלם').length
+    const inProcessOrders = orders.filter(order => order.status === 'בתהליך').length
+    const newOrders = orders.filter(order => order.status === 'חדש').length
+    
+    const productSales = {}
+    orders.forEach(order => {
+      order.items.forEach(item => {
+        if (!productSales[item.id]) {
+          productSales[item.id] = { 
+            name: item.name, 
+            quantity: 0, 
+            total: 0 
+          }
+        }
+        productSales[item.id].quantity += item.quantity
+        productSales[item.id].total += item.price * item.quantity
+      })
+    })
+    
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5)
+    
+    return {
+      totalOrders,
+      totalIncome,
+      completedOrders,
+      inProcessOrders,
+      newOrders,
+      topProducts
+    }
   }
 
   const handleProductSubmit = (e) => {
@@ -112,6 +188,9 @@ function Admin() {
     })
   }
 
+  // Get summary data
+  const summary = calculateSummary()
+
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold">לוח בקרה</h2>
@@ -148,6 +227,16 @@ function Admin() {
             }`}
           >
             הזמנות
+          </button>
+          <button
+            onClick={() => setActiveTab('summary')}
+            className={`px-4 py-2 ${
+              activeTab === 'summary'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500'
+            }`}
+          >
+            סיכום
           </button>
         </nav>
       </div>
@@ -428,54 +517,209 @@ function Admin() {
 
       {/* Orders Tab */}
       {activeTab === 'orders' && (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  מספר הזמנה
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  לקוח
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  תאריך משלוח
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  סכום
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  סטטוס
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {orders.map(order => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    #{order.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{order.name}</div>
-                    <div className="text-sm text-gray-500">{order.email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(order.deliveryDate).toLocaleDateString('he-IL')}
-                    <br />
-                    {order.deliveryTime}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ₪{order.total}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      {order.status}
-                    </span>
-                  </td>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="flex space-x-2 space-x-reverse">
+              <select 
+                value={orderStatusFilter} 
+                onChange={(e) => setOrderStatusFilter(e.target.value)}
+                className="border rounded px-3 py-1 text-sm"
+              >
+                <option value="all">כל הסטטוסים</option>
+                <option value="חדש">חדש</option>
+                <option value="בתהליך">בתהליך</option>
+                <option value="הושלם">הושלם</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th 
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleOrderSort('id')}
+                  >
+                    מספר הזמנה
+                    {orderSort.field === 'id' && (
+                      <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleOrderSort('name')}
+                  >
+                    לקוח
+                    {orderSort.field === 'name' && (
+                      <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleOrderSort('date')}
+                  >
+                    תאריך משלוח
+                    {orderSort.field === 'date' && (
+                      <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th 
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleOrderSort('total')}
+                  >
+                    סכום
+                    {orderSort.field === 'total' && (
+                      <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    סטטוס
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {getSortedOrders().map(order => (
+                  <tr key={order.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      #{order.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{order.name}</div>
+                      <div className="text-sm text-gray-500">{order.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(order.deliveryDate).toLocaleDateString('he-IL')}
+                      <br />
+                      {order.deliveryTime}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      ₪{order.total}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <select
+                        value={order.status}
+                        onChange={(e) => handleOrderStatusChange(order.id, e.target.value)}
+                        className={`px-2 py-1 text-xs leading-5 font-semibold rounded-full ${
+                          order.status === 'חדש' 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : order.status === 'בתהליך' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        <option value="חדש">חדש</option>
+                        <option value="בתהליך">בתהליך</option>
+                        <option value="הושלם">הושלם</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Summary Tab */}
+      {activeTab === 'summary' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-2">סיכום הזמנות</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">סה"כ הזמנות:</span>
+                  <span className="font-medium">{summary.totalOrders}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">הזמנות חדשות:</span>
+                  <span className="font-medium">{summary.newOrders}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">הזמנות בתהליך:</span>
+                  <span className="font-medium">{summary.inProcessOrders}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">הזמנות שהושלמו:</span>
+                  <span className="font-medium">{summary.completedOrders}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-2">סיכום כספי</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">סה"כ הכנסות:</span>
+                  <span className="font-medium">₪{summary.totalIncome.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">ממוצע להזמנה:</span>
+                  <span className="font-medium">
+                    ₪{summary.totalOrders > 0 
+                      ? (summary.totalIncome / summary.totalOrders).toFixed(2) 
+                      : '0.00'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-2">סטטיסטיקה</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">מספר מוצרים:</span>
+                  <span className="font-medium">{products.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">מספר קטגוריות:</span>
+                  <span className="font-medium">{categories.length}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold mb-4">מוצרים מובילים</h3>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    שם המוצר
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    כמות שנמכרה
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    סה"כ הכנסות
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {summary.topProducts.map((product, index) => (
+                  <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {product.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.quantity}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      ₪{product.total.toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+                {summary.topProducts.length === 0 && (
+                  <tr>
+                    <td colSpan="3" className="px-6 py-4 text-center text-sm text-gray-500">
+                      אין נתונים זמינים
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

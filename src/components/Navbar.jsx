@@ -5,6 +5,9 @@ import { getCart } from '../utils/storage'
 
 function Navbar({ isAdmin, setIsAdmin }) {
   const [cartItemsCount, setCartItemsCount] = useState(0)
+  const [showAdminModal, setShowAdminModal] = useState(false)
+  const [adminPassword, setAdminPassword] = useState('')
+  const [passwordError, setPasswordError] = useState(false)
 
   useEffect(() => {
     // Update cart count on initial load
@@ -34,6 +37,28 @@ function Navbar({ isAdmin, setIsAdmin }) {
     setCartItemsCount(count)
   }
 
+  const handleAdminClick = () => {
+    if (isAdmin) {
+      // If already in admin mode, just exit
+      setIsAdmin(false)
+    } else {
+      // If not in admin mode, show the password modal
+      setShowAdminModal(true)
+      setAdminPassword('')
+      setPasswordError(false)
+    }
+  }
+
+  const handleAdminLogin = () => {
+    if (adminPassword === 'admin123') {
+      setIsAdmin(true)
+      setShowAdminModal(false)
+      setPasswordError(false)
+    } else {
+      setPasswordError(true)
+    }
+  }
+
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4">
@@ -57,7 +82,7 @@ function Navbar({ isAdmin, setIsAdmin }) {
           
           <div className="flex items-center space-x-4 space-x-reverse">
             <button
-              onClick={() => setIsAdmin(!isAdmin)}
+              onClick={handleAdminClick}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
               {isAdmin ? 'יציאה ממצב מנהל' : 'מצב מנהל'}
@@ -70,6 +95,46 @@ function Navbar({ isAdmin, setIsAdmin }) {
           </div>
         </div>
       </div>
+
+      {/* Admin Password Modal */}
+      {showAdminModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80 max-w-md text-right">
+            <h2 className="text-xl font-bold mb-4">כניסה למצב מנהל</h2>
+            <div className="mb-4">
+              <label htmlFor="adminPassword" className="block text-gray-700 mb-2">
+                סיסמת מנהל:
+              </label>
+              <input
+                type="password"
+                id="adminPassword"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className={`w-full p-2 border rounded ${passwordError ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="הזן סיסמת מנהל"
+                onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
+              />
+              {passwordError && (
+                <p className="text-red-500 text-sm mt-1">סיסמה שגויה, נסה שוב</p>
+              )}
+            </div>
+            <div className="flex justify-between">
+              <button
+                onClick={() => setShowAdminModal(false)}
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+              >
+                ביטול
+              </button>
+              <button
+                onClick={handleAdminLogin}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                כניסה
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
