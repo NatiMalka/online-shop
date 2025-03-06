@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCart, setOrders, clearCart } from '../utils/storage'
+import { saveOrder } from '../utils/firebase'
 import emailjs from '@emailjs/browser'
 import { useToast } from '../context/ToastContext'
 
@@ -46,35 +47,38 @@ function Checkout() {
       items: cartItems,
       total,
       ...formData,
-      status: 'pending',
+      status: 'חדש', // Set initial status to 'חדש' (new)
       createdAt: new Date().toISOString()
     }
 
-    // Save order to localStorage
-    const orders = JSON.parse(localStorage.getItem('store_orders') || '[]')
-    orders.push(order)
-    setOrders(orders)
-
-    // Format items for email
-    const formattedItems = order.items.map(item => 
-      `${item.name} x${item.quantity} - ₪${item.price * item.quantity}`
-    ).join('\n')
-
-    // Common email data
-    const emailData = {
-      order_id: order.id,
-      customer_name: order.name,
-      customer_email: order.email,
-      customer_phone: order.phone,
-      delivery_address: `${order.address}, ${order.city}`,
-      delivery_date: new Date(order.deliveryDate).toLocaleDateString('he-IL'),
-      delivery_time: order.deliveryTime,
-      items: formattedItems,
-      total: `₪${order.total}`,
-      notes: order.notes || 'אין הערות'
-    }
-
     try {
+      // Save order to Firebase (for real-time updates)
+      await saveOrder(order)
+      
+      // Also save to localStorage for compatibility
+      const orders = JSON.parse(localStorage.getItem('store_orders') || '[]')
+      orders.push(order)
+      setOrders(orders)
+
+      // Format items for email
+      const formattedItems = order.items.map(item => 
+        `${item.name} x${item.quantity} - ₪${item.price * item.quantity}`
+      ).join('\n')
+
+      // Common email data
+      const emailData = {
+        order_id: order.id,
+        customer_name: order.name,
+        customer_email: order.email,
+        customer_phone: order.phone,
+        delivery_address: `${order.address}, ${order.city}`,
+        delivery_date: new Date(order.deliveryDate).toLocaleDateString('he-IL'),
+        delivery_time: order.deliveryTime,
+        items: formattedItems,
+        total: `₪${order.total}`,
+        notes: order.notes || 'אין הערות'
+      }
+
       // Send email to store owner
       await emailjs.send(
         'service_scvfp6q', // Replace with your EmailJS service ID
@@ -99,21 +103,12 @@ function Checkout() {
         'wdkhxkDvY1CBqWjhm' // Replace with your EmailJS public key
       )
 
-      // Show success toast
-      showToast('ההזמנה התקבלה בהצלחה!', 'success')
-      
-      // Clear the cart AFTER successful order
+      // Clear cart and redirect to success page
       clearCart()
-      
-      // Redirect to success page
-      navigate('/order-success')
+      navigate('/order-success', { state: { orderId: order.id } })
     } catch (error) {
-      console.error('Error sending email:', error)
-      showToast('אירעה שגיאה בשליחת האימייל, אך ההזמנה נשמרה', 'error')
-      
-      // Still clear cart and redirect even if email fails
-      clearCart()
-      navigate('/order-success')
+      console.error('Error processing order:', error)
+      showToast('אירעה שגיאה בעיבוד ההזמנה. אנא נסה שוב מאוחר יותר.', 'error')
     } finally {
       setIsSubmitting(false)
     }

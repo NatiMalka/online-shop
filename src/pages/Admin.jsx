@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { getProducts, setProducts, getCategories, setCategories, getOrders, setOrders } from '../utils/storage'
+import { listenToOrders, updateOrderStatus } from '../utils/firebase'
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('products')
@@ -20,6 +21,18 @@ function Admin() {
 
   useEffect(() => {
     loadData()
+    
+    // Set up real-time listener for orders
+    const unsubscribe = listenToOrders((updatedOrders) => {
+      setOrdersState(updatedOrders)
+      // Also update localStorage for compatibility
+      setOrders(updatedOrders)
+    })
+    
+    // Clean up listener on component unmount
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
   }, [])
 
   const loadData = () => {
@@ -30,11 +43,21 @@ function Admin() {
 
   // Order status management
   const handleOrderStatusChange = (orderId, newStatus) => {
+    // Update in Firebase (real-time)
+    updateOrderStatus(orderId, newStatus)
+      .then(() => {
+        console.log(`Order ${orderId} status updated to ${newStatus}`)
+      })
+      .catch(error => {
+        console.error("Error updating order status:", error)
+      })
+    
+    // Also update local state for immediate UI feedback
     const updatedOrders = orders.map(order => 
       order.id === orderId ? { ...order, status: newStatus } : order
     )
-    setOrders(updatedOrders)
     setOrdersState(updatedOrders)
+    setOrders(updatedOrders) // Update localStorage for compatibility
   }
 
   // Sorting functionality
