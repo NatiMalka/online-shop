@@ -2,6 +2,49 @@ import React, { useState, useEffect } from 'react'
 import { getProducts, setProducts, getCategories, setCategories, getOrders, setOrders } from '../utils/storage'
 import { listenToOrders, updateOrderStatus, getOrdersOnce, deleteOrder } from '../utils/firebase'
 import { openUploadWidget, getPublicIdFromUrl } from '../utils/cloudinary'
+// Import icons for category selection
+import { 
+  // Food & Beverage icons
+  FaUtensils, FaBreadSlice, FaCarrot, FaWineGlass, FaCoffee,
+  FaAppleAlt, FaFish, FaIceCream, FaEgg, FaCheese, FaPizzaSlice,
+  FaHamburger, FaCandyCane, FaCookie, FaWineBottle, FaGlassMartini,
+  FaLemon, FaPepperHot, FaDrumstickBite, FaBacon, FaHotdog, FaMugHot,
+  FaGlassWhiskey, FaWater, FaLeaf, FaSeedling, 
+  
+  // Shopping & Store icons
+  FaShoppingBasket, FaStore, FaShoppingCart, FaShoppingBag, FaTag, 
+  FaPercent, FaMoneyBillWave, FaCreditCard, FaTruck, FaBox, FaBoxOpen, 
+  FaGift, FaStar, FaHeart,
+  
+  // Hardware & Tools (Tambour)
+  FaTools, FaHammer, FaPaintRoller, FaPaintBrush, FaWrench, FaScrewdriver,
+  FaRuler, FaRulerCombined, FaHardHat, FaLightbulb, FaPlug, FaBolt,
+  FaFaucet, FaToilet, FaShower, FaBath, FaCouch, FaChair, FaBed, FaDoorOpen,
+  
+  // Games & Toys
+  FaDice, FaGamepad, FaChess, FaChessKnight, FaPuzzlePiece, FaFootballBall,
+  FaBasketballBall, FaVolleyballBall, FaTableTennis, FaBiking, FaRunning,
+  
+  // Office & School
+  FaPen, FaPencilAlt, FaBook, FaBookOpen, FaGraduationCap, FaClipboard,
+  FaCalculator, FaPaperclip, FaStamp, FaPrint,
+  
+  // Electronics
+  FaMobile, FaLaptop, FaDesktop, FaHeadphones, FaCamera, FaVideo,
+  FaTv, FaKeyboard, FaMouse, FaMicrophone, FaVolumeUp, FaBatteryFull,
+  
+  // Clothing & Accessories
+  FaTshirt, FaSocks, FaGem, FaGlasses, FaHatWizard, FaMitten, FaUmbrella,
+  FaRing,
+  
+  // Home & Garden
+  FaHome, FaTree, FaSprayCan, FaBroom, FaTrash, FaRecycle, FaWind, FaFan,
+  FaTemperatureLow, FaTemperatureHigh,
+  
+  // Beauty & Personal Care
+  FaCut, FaHandSparkles, FaHandsWash, FaPumpSoap, 
+  FaSpa, FaHospital, FaMedkit, FaPills, FaFirstAid, FaBaby
+} from 'react-icons/fa'
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('products')
@@ -16,13 +59,168 @@ function Admin() {
     price: '',
     image: '',
     categoryId: '',
-    imagePublicId: '' // Store Cloudinary public ID for deletion
+    imagePublicId: '', // Store Cloudinary public ID for deletion
+    iconName: 'FaUtensils', // Default icon
+    showIcon: true // Default to showing icon
   })
   const [imagePreview, setImagePreview] = useState('')
   const [orderSort, setOrderSort] = useState({ field: 'id', direction: 'desc' })
   const [orderStatusFilter, setOrderStatusFilter] = useState('all')
   const [orderSearchQuery, setOrderSearchQuery] = useState('')
   const [firebaseError, setFirebaseError] = useState(null)
+  const [showIconSelector, setShowIconSelector] = useState(false)
+  const [iconSearchQuery, setIconSearchQuery] = useState('')
+  
+  // Available icons for categories - simplified list with reliable icons
+  const availableIcons = [
+    // Food & Beverage
+    { name: 'FaUtensils', component: <FaUtensils /> },
+    { name: 'FaBreadSlice', component: <FaBreadSlice /> },
+    { name: 'FaCarrot', component: <FaCarrot /> },
+    { name: 'FaWineGlass', component: <FaWineGlass /> },
+    { name: 'FaCoffee', component: <FaCoffee /> },
+    { name: 'FaAppleAlt', component: <FaAppleAlt /> },
+    { name: 'FaFish', component: <FaFish /> },
+    { name: 'FaIceCream', component: <FaIceCream /> },
+    { name: 'FaEgg', component: <FaEgg /> },
+    { name: 'FaCheese', component: <FaCheese /> },
+    { name: 'FaPizzaSlice', component: <FaPizzaSlice /> },
+    { name: 'FaHamburger', component: <FaHamburger /> },
+    { name: 'FaCandyCane', component: <FaCandyCane /> },
+    { name: 'FaCookie', component: <FaCookie /> },
+    { name: 'FaWineBottle', component: <FaWineBottle /> },
+    { name: 'FaGlassMartini', component: <FaGlassMartini /> },
+    { name: 'FaLemon', component: <FaLemon /> },
+    { name: 'FaPepperHot', component: <FaPepperHot /> },
+    { name: 'FaDrumstickBite', component: <FaDrumstickBite /> },
+    { name: 'FaBacon', component: <FaBacon /> },
+    { name: 'FaHotdog', component: <FaHotdog /> },
+    { name: 'FaMugHot', component: <FaMugHot /> },
+    { name: 'FaGlassWhiskey', component: <FaGlassWhiskey /> },
+    { name: 'FaWater', component: <FaWater /> },
+    
+    // Hardware & Tools (Tambour)
+    { name: 'FaTools', component: <FaTools /> },
+    { name: 'FaHammer', component: <FaHammer /> },
+    { name: 'FaPaintRoller', component: <FaPaintRoller /> },
+    { name: 'FaPaintBrush', component: <FaPaintBrush /> },
+    { name: 'FaWrench', component: <FaWrench /> },
+    { name: 'FaScrewdriver', component: <FaScrewdriver /> },
+    { name: 'FaRuler', component: <FaRuler /> },
+    { name: 'FaRulerCombined', component: <FaRulerCombined /> },
+    { name: 'FaHardHat', component: <FaHardHat /> },
+    { name: 'FaLightbulb', component: <FaLightbulb /> },
+    { name: 'FaPlug', component: <FaPlug /> },
+    { name: 'FaBolt', component: <FaBolt /> },
+    { name: 'FaFaucet', component: <FaFaucet /> },
+    { name: 'FaToilet', component: <FaToilet /> },
+    { name: 'FaShower', component: <FaShower /> },
+    { name: 'FaBath', component: <FaBath /> },
+    
+    // Home & Furniture
+    { name: 'FaCouch', component: <FaCouch /> },
+    { name: 'FaChair', component: <FaChair /> },
+    { name: 'FaBed', component: <FaBed /> },
+    { name: 'FaDoorOpen', component: <FaDoorOpen /> },
+    { name: 'FaHome', component: <FaHome /> },
+    { name: 'FaToilet', component: <FaToilet /> },
+    { name: 'FaBath', component: <FaBath /> },
+    { name: 'FaShower', component: <FaShower /> },
+    
+    // Games & Toys
+    { name: 'FaDice', component: <FaDice /> },
+    { name: 'FaGamepad', component: <FaGamepad /> },
+    { name: 'FaChess', component: <FaChess /> },
+    { name: 'FaChessKnight', component: <FaChessKnight /> },
+    { name: 'FaPuzzlePiece', component: <FaPuzzlePiece /> },
+    { name: 'FaFootballBall', component: <FaFootballBall /> },
+    { name: 'FaBasketballBall', component: <FaBasketballBall /> },
+    { name: 'FaVolleyballBall', component: <FaVolleyballBall /> },
+    { name: 'FaTableTennis', component: <FaTableTennis /> },
+    { name: 'FaBiking', component: <FaBiking /> },
+    { name: 'FaRunning', component: <FaRunning /> },
+    
+    // Office & School
+    { name: 'FaPen', component: <FaPen /> },
+    { name: 'FaPencilAlt', component: <FaPencilAlt /> },
+    { name: 'FaBook', component: <FaBook /> },
+    { name: 'FaBookOpen', component: <FaBookOpen /> },
+    { name: 'FaGraduationCap', component: <FaGraduationCap /> },
+    { name: 'FaClipboard', component: <FaClipboard /> },
+    { name: 'FaCalculator', component: <FaCalculator /> },
+    { name: 'FaPaperclip', component: <FaPaperclip /> },
+    { name: 'FaStamp', component: <FaStamp /> },
+    { name: 'FaPrint', component: <FaPrint /> },
+    
+    // Electronics
+    { name: 'FaMobile', component: <FaMobile /> },
+    { name: 'FaLaptop', component: <FaLaptop /> },
+    { name: 'FaDesktop', component: <FaDesktop /> },
+    { name: 'FaHeadphones', component: <FaHeadphones /> },
+    { name: 'FaCamera', component: <FaCamera /> },
+    { name: 'FaVideo', component: <FaVideo /> },
+    { name: 'FaTv', component: <FaTv /> },
+    { name: 'FaKeyboard', component: <FaKeyboard /> },
+    { name: 'FaMouse', component: <FaMouse /> },
+    { name: 'FaMicrophone', component: <FaMicrophone /> },
+    { name: 'FaVolumeUp', component: <FaVolumeUp /> },
+    { name: 'FaBatteryFull', component: <FaBatteryFull /> },
+    
+    // Clothing & Accessories
+    { name: 'FaTshirt', component: <FaTshirt /> },
+    { name: 'FaSocks', component: <FaSocks /> },
+    { name: 'FaGem', component: <FaGem /> },
+    { name: 'FaGlasses', component: <FaGlasses /> },
+    { name: 'FaHatWizard', component: <FaHatWizard /> },
+    { name: 'FaMitten', component: <FaMitten /> },
+    { name: 'FaUmbrella', component: <FaUmbrella /> },
+    { name: 'FaRing', component: <FaRing /> },
+    
+    // Beauty & Personal Care
+    { name: 'FaCut', component: <FaCut /> },
+    { name: 'FaSprayCan', component: <FaSprayCan /> },
+    { name: 'FaHandSparkles', component: <FaHandSparkles /> },
+    { name: 'FaHandsWash', component: <FaHandsWash /> },
+    { name: 'FaPumpSoap', component: <FaPumpSoap /> },
+    { name: 'FaSpa', component: <FaSpa /> },
+    
+    // Health & Medicine
+    { name: 'FaHospital', component: <FaHospital /> },
+    { name: 'FaMedkit', component: <FaMedkit /> },
+    { name: 'FaPills', component: <FaPills /> },
+    { name: 'FaFirstAid', component: <FaFirstAid /> },
+    { name: 'FaBaby', component: <FaBaby /> },
+    
+    // Garden & Outdoor
+    { name: 'FaHome', component: <FaHome /> },
+    { name: 'FaTree', component: <FaTree /> },
+    { name: 'FaLeaf', component: <FaLeaf /> },
+    { name: 'FaSeedling', component: <FaSeedling /> },
+    { name: 'FaSprayCan', component: <FaSprayCan /> },
+    { name: 'FaBroom', component: <FaBroom /> },
+    { name: 'FaTrash', component: <FaTrash /> },
+    { name: 'FaRecycle', component: <FaRecycle /> },
+    { name: 'FaWind', component: <FaWind /> },
+    { name: 'FaFan', component: <FaFan /> },
+    { name: 'FaTemperatureLow', component: <FaTemperatureLow /> },
+    { name: 'FaTemperatureHigh', component: <FaTemperatureHigh /> },
+    
+    // Shopping & Store
+    { name: 'FaShoppingBasket', component: <FaShoppingBasket /> },
+    { name: 'FaStore', component: <FaStore /> },
+    { name: 'FaShoppingCart', component: <FaShoppingCart /> },
+    { name: 'FaShoppingBag', component: <FaShoppingBag /> },
+    { name: 'FaTag', component: <FaTag /> },
+    { name: 'FaPercent', component: <FaPercent /> },
+    { name: 'FaMoneyBillWave', component: <FaMoneyBillWave /> },
+    { name: 'FaCreditCard', component: <FaCreditCard /> },
+    { name: 'FaTruck', component: <FaTruck /> },
+    { name: 'FaBox', component: <FaBox /> },
+    { name: 'FaBoxOpen', component: <FaBoxOpen /> },
+    { name: 'FaGift', component: <FaGift /> },
+    { name: 'FaStar', component: <FaStar /> },
+    { name: 'FaHeart', component: <FaHeart /> }
+  ]
 
   useEffect(() => {
     loadData()
@@ -244,7 +442,9 @@ function Admin() {
     const newCategory = {
       id: editingCategory?.id || Date.now().toString(),
       name: formData.name,
-      description: formData.description
+      description: formData.description,
+      iconName: formData.iconName || 'FaUtensils', // Add icon name to category
+      showIcon: formData.showIcon // Add showIcon field
     }
 
     const updatedCategories = editingCategory
@@ -260,7 +460,9 @@ function Admin() {
       price: '',
       image: '',
       categoryId: '',
-      imagePublicId: ''
+      imagePublicId: '',
+      iconName: 'FaUtensils', // Reset to default icon
+      showIcon: true // Reset to showing icon
     })
   }
 
@@ -293,20 +495,24 @@ function Admin() {
       price: product.price,
       image: product.image,
       categoryId: product.categoryId,
-      imagePublicId: imagePublicId
+      imagePublicId: imagePublicId,
+      showIcon: true
     })
     setImagePreview(product.image)
   }
 
   const handleEditCategory = (category) => {
     setEditingCategory(category)
+    setActiveTab('categories')
     setFormData({
       name: category.name,
       description: category.description,
       price: '',
       image: '',
       categoryId: '',
-      imagePublicId: ''
+      imagePublicId: '',
+      iconName: category.iconName || 'FaUtensils', // Set icon name from category
+      showIcon: category.showIcon !== undefined ? category.showIcon : true // Set showIcon from category or default to true
     })
   }
 
@@ -330,8 +536,30 @@ function Admin() {
     });
   }
 
+  // Filter icons based on search query
+  const filteredIcons = iconSearchQuery
+    ? availableIcons.filter(icon => 
+        icon.name.toLowerCase().includes(iconSearchQuery.toLowerCase()))
+    : availableIcons
+
   // Get summary data
   const summary = calculateSummary()
+
+  const resetForm = () => {
+    setEditingProduct(null)
+    setEditingCategory(null)
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      image: '',
+      categoryId: '',
+      imagePublicId: '',
+      iconName: 'FaUtensils', // Reset to default icon
+      showIcon: true // Reset to showing icon
+    })
+    setImagePreview('')
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
@@ -517,18 +745,7 @@ function Admin() {
               {editingProduct && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setEditingProduct(null)
-                    setFormData({
-                      name: '',
-                      description: '',
-                      price: '',
-                      image: '',
-                      categoryId: '',
-                      imagePublicId: ''
-                    })
-                    setImagePreview('')
-                  }}
+                  onClick={resetForm}
                   className="btn-secondary"
                 >
                   ביטול
@@ -642,21 +859,117 @@ function Admin() {
                 />
               </div>
             </div>
+            
+            {/* Icon Selector Button */}
+            <div className="mt-4">
+              <div className="flex items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  אייקון לקטגוריה
+                </label>
+                <div className="mr-4 flex items-center">
+                  <input
+                    type="checkbox"
+                    id="showIcon"
+                    checked={formData.showIcon}
+                    onChange={(e) => setFormData({ ...formData, showIcon: e.target.checked })}
+                    className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  />
+                  <label htmlFor="showIcon" className="mr-2 block text-sm text-gray-700">
+                    הצג אייקון
+                  </label>
+                </div>
+              </div>
+              
+              {formData.showIcon && (
+                <div className="flex items-center">
+                  <div className="text-2xl mr-3 p-3 bg-gray-100 rounded-lg flex items-center justify-center min-w-[48px] min-h-[48px]">
+                    {availableIcons.find(icon => icon.name === formData.iconName)?.component}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowIconSelector(true)}
+                    className="bg-blue-50 text-blue-600 px-6 py-2 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                  >
+                    בחר אייקון
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Icon Selector Popup */}
+            {showIconSelector && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[80vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold">בחר אייקון לקטגוריה</h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowIconSelector(false);
+                        setIconSearchQuery('');
+                      }}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  {/* Search input */}
+                  <div className="mb-4">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="חפש אייקון..."
+                        value={iconSearchQuery}
+                        onChange={(e) => setIconSearchQuery(e.target.value)}
+                        className="input-field pl-10"
+                      />
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
+                    {filteredIcons.map((icon) => (
+                      <div
+                        key={icon.name}
+                        onClick={() => {
+                          setFormData({ ...formData, iconName: icon.name });
+                          setShowIconSelector(false);
+                          setIconSearchQuery('');
+                        }}
+                        className={`flex items-center justify-center p-3 rounded-lg cursor-pointer transition-all ${
+                          formData.iconName === icon.name
+                            ? 'bg-blue-100 text-blue-600 border-2 border-blue-500'
+                            : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                        } min-w-[48px] min-h-[48px]`}
+                      >
+                        <div className="text-2xl flex items-center justify-center">
+                          {icon.component}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {filteredIcons.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      לא נמצאו אייקונים התואמים לחיפוש
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
             <div className="mt-4 flex justify-end space-x-4 space-x-reverse">
               {editingCategory && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setEditingCategory(null)
-                    setFormData({
-                      name: '',
-                      description: '',
-                      price: '',
-                      image: '',
-                      categoryId: '',
-                      imagePublicId: ''
-                    })
-                  }}
+                  onClick={resetForm}
                   className="btn-secondary"
                 >
                   ביטול
@@ -679,6 +992,12 @@ function Admin() {
                     תיאור
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    אייקון
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    הצגת אייקון
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     פעולות
                   </th>
                 </tr>
@@ -694,6 +1013,17 @@ function Admin() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">
                         {category.description}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-xl text-gray-700 flex justify-center">
+                        {availableIcons.find(icon => icon.name === (category.iconName || 'FaUtensils'))?.component || 
+                         availableIcons.find(icon => icon.name === 'FaUtensils')?.component}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="text-sm text-gray-500">
+                        {category.showIcon === false ? 'לא' : 'כן'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
