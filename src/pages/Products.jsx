@@ -34,6 +34,19 @@ function Products() {
   }, [selectedCategory, searchQuery])
 
   const handleAddToCart = (product) => {
+    // Create a ripple effect on the button that was clicked
+    const buttons = document.querySelectorAll(`.add-to-cart-btn-${product.id}`);
+    buttons.forEach(button => {
+      // Add animation classes
+      button.classList.add('animate-click');
+      
+      // Remove animation classes after animation completes
+      setTimeout(() => {
+        button.classList.remove('animate-click');
+      }, 600);
+    });
+    
+    // Add to cart and show toast
     addToCart(product)
     showToast(`${product.name} נוסף לסל הקניות`, 'success')
   }
@@ -91,9 +104,14 @@ function Products() {
                 <span className="text-xl font-bold">₪{product.price}</span>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="btn-primary"
+                  className={`add-to-cart-btn-${product.id} flip-button`}
                 >
-                  הוסף לסל
+                  <span className="flip-button-front">הוסף לסל</span>
+                  <span className="flip-button-back">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 cart-icon" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
+                    </svg>
+                  </span>
                 </button>
               </div>
             </div>

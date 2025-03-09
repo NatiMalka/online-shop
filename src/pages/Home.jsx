@@ -220,6 +220,19 @@ function Home() {
   }
 
   const handleAddToCart = (product) => {
+    // Create a ripple effect on the button that was clicked
+    const buttons = document.querySelectorAll(`.add-to-cart-btn-${product.id}`);
+    buttons.forEach(button => {
+      // Add animation classes
+      button.classList.add('animate-click');
+      
+      // Remove animation classes after animation completes
+      setTimeout(() => {
+        button.classList.remove('animate-click');
+      }, 600);
+    });
+    
+    // Add to cart and show toast
     addToCart(product)
     showToast(`${product.name} נוסף לסל הקניות`, 'success')
   }
@@ -315,12 +328,14 @@ function Home() {
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                    className={`add-to-cart-btn-${product.id} flip-button`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
-                    </svg>
-                    הוסף לסל
+                    <span className="flip-button-front">הוסף לסל</span>
+                    <span className="flip-button-back">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 cart-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
+                      </svg>
+                    </span>
                   </button>
                   <Link
                     to={`/products?category=${product.categoryId}`}
@@ -334,17 +349,9 @@ function Home() {
             </div>
           ))}
         </div>
-        <div className="text-center mt-8">
-          <Link to="/products" className="inline-flex items-center bg-white border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors font-medium">
-            צפה בכל המוצרים
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </Link>
-        </div>
       </section>
     </div>
   )
 }
 
-export default Home 
+export default Home
