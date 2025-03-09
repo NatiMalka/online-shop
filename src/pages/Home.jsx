@@ -104,10 +104,10 @@ function Home() {
     FaChair: <FaChair className="text-3xl mb-3" />,
     FaBed: <FaBed className="text-3xl mb-3" />,
     FaDoorOpen: <FaDoorOpen className="text-3xl mb-3" />,
-    FaHome: <FaHome className="text-3xl mb-3" />,
-    FaToilet: <FaToilet className="text-3xl mb-3" />,
-    FaBath: <FaBath className="text-3xl mb-3" />,
-    FaShower: <FaShower className="text-3xl mb-3" />,
+    FaHomeInterior: <FaHome className="text-3xl mb-3" />,
+    FaToiletInterior: <FaToilet className="text-3xl mb-3" />,
+    FaBathInterior: <FaBath className="text-3xl mb-3" />,
+    FaShowerInterior: <FaShower className="text-3xl mb-3" />,
     
     // Games & Toys
     FaDice: <FaDice className="text-3xl mb-3" />,
@@ -174,11 +174,11 @@ function Home() {
     FaBaby: <FaBaby className="text-3xl mb-3" />,
     
     // Garden & Outdoor
-    FaHome: <FaHome className="text-3xl mb-3" />,
+    FaHomeGarden: <FaHome className="text-3xl mb-3" />,
     FaTree: <FaTree className="text-3xl mb-3" />,
     FaLeaf: <FaLeaf className="text-3xl mb-3" />,
     FaSeedling: <FaSeedling className="text-3xl mb-3" />,
-    FaSprayCan: <FaSprayCan className="text-3xl mb-3" />,
+    FaSprayCanGarden: <FaSprayCan className="text-3xl mb-3" />,
     FaBroom: <FaBroom className="text-3xl mb-3" />,
     FaTrash: <FaTrash className="text-3xl mb-3" />,
     FaRecycle: <FaRecycle className="text-3xl mb-3" />,
