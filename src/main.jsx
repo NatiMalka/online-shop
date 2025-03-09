@@ -4,6 +4,10 @@ import { HashRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
 import { getProducts, setProducts, getCategories, setCategories } from './utils/storage'
+import emailjs from '@emailjs/browser'
+
+// Initialize EmailJS
+emailjs.init('wdkhxkDvY1CBqWjhm')
 
 // Initialize sample data if not exists
 const initSampleData = () => {

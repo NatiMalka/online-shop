@@ -5,6 +5,28 @@ import { saveOrder } from '../utils/firebase'
 import emailjs from '@emailjs/browser'
 import { useToast } from '../context/ToastContext'
 
+// Function to get the next order number
+const getNextOrderNumber = () => {
+  // Get the current highest order number from localStorage
+  const orders = JSON.parse(localStorage.getItem('store_orders') || '[]')
+  
+  // Find the highest order number
+  let highestNumber = 0
+  orders.forEach(order => {
+    // Extract the number from the order ID (format: "ORDER-123")
+    const match = order.id && order.id.match(/ORDER-(\d+)/)
+    if (match && match[1]) {
+      const orderNum = parseInt(match[1], 10)
+      if (orderNum > highestNumber) {
+        highestNumber = orderNum
+      }
+    }
+  })
+  
+  // Return the next order number
+  return highestNumber + 1
+}
+
 function Checkout() {
   const navigate = useNavigate()
   const [cartItems, setCartItems] = useState([])
@@ -41,15 +63,20 @@ function Checkout() {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Create order object
+    // Get the next order number
+    const orderNumber = getNextOrderNumber()
+    console.log("Generated order number:", orderNumber);
+    
+    // Create order object with readable ID
     const order = {
-      id: Date.now().toString(),
+      id: `ORDER-${orderNumber}`,
       items: cartItems,
       total,
       ...formData,
       status: 'חדש', // Set initial status to 'חדש' (new)
       createdAt: new Date().toISOString()
     }
+    console.log("Created order with ID:", order.id);
 
     try {
       console.log("Submitting order:", order);
@@ -71,6 +98,9 @@ function Checkout() {
         `${item.name} x${item.quantity} - ₪${item.price * item.quantity}`
       ).join('\n')
 
+      // Round the total amount to avoid decimal issues
+      const roundedTotal = Math.round(order.total);
+
       // Common email data
       const emailData = {
         order_id: order.id,
@@ -81,7 +111,7 @@ function Checkout() {
         delivery_date: new Date(order.deliveryDate).toLocaleDateString('he-IL'),
         delivery_time: order.deliveryTime,
         items: formattedItems,
-        total: `₪${order.total}`,
+        total: `₪${roundedTotal}`, // Use the rounded total
         notes: order.notes || 'אין הערות'
       }
 
@@ -92,7 +122,7 @@ function Checkout() {
         'template_jqnqrmr',
         {
           to_email: 'netamal3134@gmail.com',
-          subject: `הזמנה חדשה #${order.id}`,
+          subject: `הזמנה חדשה ${order.id}`,
           ...emailData
         },
         'wdkhxkDvY1CBqWjhm'
@@ -101,14 +131,27 @@ function Checkout() {
 
       // Send confirmation email to customer
       console.log("Sending confirmation email to customer...");
+      const customerTemplateParams = {
+        to_name: formData.name,
+        to_email: formData.email,
+        reply_to: 'netamal3134@gmail.com',
+        from_name: "החנות האונליין",
+        customer_email: formData.email,
+        customer_name: formData.name,
+        subject: `אישור הזמנה ${order.id}`,
+        order_id: order.id,
+        delivery_date: new Date(order.deliveryDate).toLocaleDateString('he-IL'),
+        delivery_time: order.deliveryTime,
+        delivery_address: `${order.address}, ${order.city}`,
+        items: formattedItems,
+        total: `₪${roundedTotal}`, // Use the rounded total
+        notes: order.notes || 'אין הערות'
+      };
+      
       await emailjs.send(
         'service_scvfp6q',
         'template_9gyc9gb',
-        {
-          to_email: order.email,
-          subject: `אישור הזמנה #${order.id}`,
-          ...emailData
-        },
+        customerTemplateParams,
         'wdkhxkDvY1CBqWjhm'
       )
       console.log("Confirmation email sent to customer successfully");
@@ -250,13 +293,13 @@ function Checkout() {
             {cartItems.map(item => (
               <div key={item.id} className="flex justify-between">
                 <span>{item.name} x{item.quantity}</span>
-                <span>₪{item.price * item.quantity}</span>
+                <span>₪{Math.round(item.price * item.quantity)}</span>
               </div>
             ))}
             <div className="border-t pt-4">
               <div className="flex justify-between font-bold">
                 <span>סה"כ לתשלום</span>
-                <span>₪{total}</span>
+                <span>₪{Math.round(total)}</span>
               </div>
             </div>
           </div>

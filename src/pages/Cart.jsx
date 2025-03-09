@@ -14,7 +14,7 @@ function Cart() {
 
   const calculateTotal = (items) => {
     const sum = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-    setTotal(sum)
+    setTotal(Math.round(sum))
   }
 
   const handleQuantityChange = (productId, newQuantity) => {

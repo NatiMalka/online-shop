@@ -82,11 +82,11 @@ function Admin() {
   }
 
   // Order status management
-  const handleOrderStatusChange = (orderId, newStatus) => {
+  const handleOrderStatusChange = (orderId, newStatus, firebaseKey) => {
     console.log(`Changing order ${orderId} status to ${newStatus}`);
     
     // Update in Firebase (real-time)
-    updateOrderStatus(orderId, newStatus)
+    updateOrderStatus(orderId, newStatus, firebaseKey)
       .then(() => {
         console.log(`Order ${orderId} status updated to ${newStatus} in Firebase`);
         // Clear any previous Firebase error
@@ -152,7 +152,7 @@ function Admin() {
           }
         }
         productSales[item.id].quantity += item.quantity
-        productSales[item.id].total += item.price * item.quantity
+        productSales[item.id].total += Math.round(item.price * item.quantity)
       })
     })
     
@@ -692,7 +692,7 @@ function Admin() {
                 {getSortedOrders().map(order => (
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      #{order.id}
+                      {order.id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{order.name}</div>
@@ -704,12 +704,12 @@ function Admin() {
                       {order.deliveryTime}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ₪{order.total}
+                      ₪{Math.round(order.total)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
                         value={order.status}
-                        onChange={(e) => handleOrderStatusChange(order.id, e.target.value)}
+                        onChange={(e) => handleOrderStatusChange(order.id, e.target.value, order.firebaseKey)}
                         className={`px-2 py-1 text-xs leading-5 font-semibold rounded-full ${
                           order.status === 'חדש' 
                             ? 'bg-yellow-100 text-yellow-800' 
@@ -784,21 +784,21 @@ function Admin() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">סה"כ הכנסות:</span>
-                  <span className="text-xl font-bold text-teal-800">₪{summary.totalIncome.toFixed(2)}</span>
+                  <span className="text-xl font-bold text-teal-800">₪{Math.round(summary.totalIncome)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">ממוצע להזמנה:</span>
                   <span className="text-lg font-bold text-teal-700">
                     ₪{summary.totalOrders > 0 
-                      ? (summary.totalIncome / summary.totalOrders).toFixed(2) 
-                      : '0.00'}
+                      ? Math.round(summary.totalIncome / summary.totalOrders) 
+                      : '0'}
                   </span>
                 </div>
                 <div className="mt-4 pt-4 border-t border-teal-200">
                   <div className="text-center">
                     <span className="text-sm text-teal-700">הכנסה חודשית משוערת</span>
                     <div className="text-2xl font-bold text-teal-800 mt-1">
-                      ₪{(summary.totalIncome / (summary.totalOrders ? summary.totalOrders : 1) * 30).toFixed(2)}
+                      ₪{Math.round(summary.totalIncome / (summary.totalOrders ? summary.totalOrders : 1) * 30)}
                     </div>
                   </div>
                 </div>
@@ -877,7 +877,7 @@ function Admin() {
                         <div className="text-xs text-gray-500">יחידות</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-bold text-emerald-600">₪{product.total.toFixed(2)}</div>
+                        <div className="text-sm font-bold text-emerald-600">₪{product.total}</div>
                       </td>
                     </tr>
                   ))}

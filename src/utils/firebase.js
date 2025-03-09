@@ -39,11 +39,11 @@ export const saveOrder = async (order) => {
     const newOrderRef = push(ordersRef);
     await set(newOrderRef, {
       ...order,
-      id: newOrderRef.key,
+      firebaseId: newOrderRef.key,
       timestamp: Date.now()
     });
-    console.log("Order saved to Firebase successfully with ID:", newOrderRef.key);
-    return newOrderRef.key;
+    console.log("Order saved to Firebase successfully with ID:", order.id);
+    return order.id;
   } catch (error) {
     handleFirebaseError(error, null, "saveOrder");
     throw error; // Re-throw to allow caller to handle
@@ -60,7 +60,7 @@ export const getOrdersOnce = async () => {
       const ordersData = snapshot.val();
       const ordersList = Object.keys(ordersData).map(key => ({
         ...ordersData[key],
-        id: key
+        firebaseKey: key // Store Firebase key separately without overriding original id
       }));
       console.log(`Retrieved ${ordersList.length} orders from Firebase`);
       return ordersList;
@@ -83,7 +83,7 @@ export const listenToOrders = (callback) => {
         const ordersData = snapshot.val();
         const ordersList = Object.keys(ordersData).map(key => ({
           ...ordersData[key],
-          id: key
+          firebaseKey: key // Store Firebase key separately without overriding original id
         }));
         console.log(`Real-time update: ${ordersList.length} orders from Firebase`);
         callback(ordersList);
@@ -103,10 +103,10 @@ export const listenToOrders = (callback) => {
   }
 };
 
-export const updateOrderStatus = async (orderId, status) => {
+export const updateOrderStatus = async (orderId, status, firebaseKey) => {
   console.log(`Updating order ${orderId} status to ${status}`);
   try {
-    const orderRef = ref(database, `orders/${orderId}`);
+    const orderRef = ref(database, `orders/${firebaseKey}`);
     await update(orderRef, { status });
     console.log(`Order ${orderId} status updated successfully`);
     return true;

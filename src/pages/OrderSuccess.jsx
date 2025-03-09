@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { getCart } from '../utils/storage'
 
 function OrderSuccess() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const orderId = location.state?.orderId
 
   useEffect(() => {
     // If someone tries to access this page directly without placing an order
@@ -36,6 +38,12 @@ function OrderSuccess() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           תודה על ההזמנה!
         </h2>
+        
+        {orderId && (
+          <div className="bg-blue-50 p-4 rounded-lg mb-6">
+            <p className="text-blue-800 font-medium">מספר הזמנה: {orderId}</p>
+          </div>
+        )}
         
         <p className="text-gray-600 mb-8">
           ההזמנה שלך התקבלה בהצלחה. נשלח לך אימייל עם פרטי ההזמנה.
