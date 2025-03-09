@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { getProducts, setProducts, getCategories, setCategories, getOrders, setOrders } from '../utils/storage'
 import { listenToOrders, updateOrderStatus, getOrdersOnce, deleteOrder } from '../utils/firebase'
+import { openUploadWidget, getPublicIdFromUrl } from '../utils/cloudinary'
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('products')
@@ -14,8 +15,10 @@ function Admin() {
     description: '',
     price: '',
     image: '',
-    categoryId: ''
+    categoryId: '',
+    imagePublicId: '' // Store Cloudinary public ID for deletion
   })
+  const [imagePreview, setImagePreview] = useState('')
   const [orderSort, setOrderSort] = useState({ field: 'id', direction: 'desc' })
   const [orderStatusFilter, setOrderStatusFilter] = useState('all')
   const [orderSearchQuery, setOrderSearchQuery] = useState('')
@@ -203,28 +206,37 @@ function Admin() {
     }
   }
 
-  const handleProductSubmit = (e) => {
+  const handleProductSubmit = async (e) => {
     e.preventDefault()
-    const newProduct = {
-      id: editingProduct?.id || Date.now().toString(),
-      ...formData,
-      price: parseFloat(formData.price)
+    
+    try {
+      // Create a new product object
+      let newProduct = {
+        id: editingProduct?.id || Date.now().toString(),
+        ...formData,
+        price: parseFloat(formData.price)
+      }
+      
+      const updatedProducts = editingProduct
+        ? products.map(p => p.id === editingProduct.id ? newProduct : p)
+        : [...products, newProduct]
+
+      setProducts(updatedProducts)
+      setProductsState(updatedProducts)
+      setEditingProduct(null)
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        image: '',
+        categoryId: '',
+        imagePublicId: ''
+      })
+      setImagePreview('')
+    } catch (error) {
+      console.error("Error submitting product:", error)
+      alert("שגיאה בשמירת המוצר. אנא נסה שנית.")
     }
-
-    const updatedProducts = editingProduct
-      ? products.map(p => p.id === editingProduct.id ? newProduct : p)
-      : [...products, newProduct]
-
-    setProducts(updatedProducts)
-    setProductsState(updatedProducts)
-    setEditingProduct(null)
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      image: '',
-      categoryId: ''
-    })
   }
 
   const handleCategorySubmit = (e) => {
@@ -247,7 +259,8 @@ function Admin() {
       description: '',
       price: '',
       image: '',
-      categoryId: ''
+      categoryId: '',
+      imagePublicId: ''
     })
   }
 
@@ -268,14 +281,21 @@ function Admin() {
   }
 
   const handleEditProduct = (product) => {
+    // Extract public ID from Cloudinary URL if it exists
+    const imagePublicId = product.image && product.image.includes('cloudinary.com') 
+      ? getPublicIdFromUrl(product.image)
+      : '';
+      
     setEditingProduct(product)
     setFormData({
       name: product.name,
       description: product.description,
       price: product.price,
       image: product.image,
-      categoryId: product.categoryId
+      categoryId: product.categoryId,
+      imagePublicId: imagePublicId
     })
+    setImagePreview(product.image)
   }
 
   const handleEditCategory = (category) => {
@@ -285,8 +305,29 @@ function Admin() {
       description: category.description,
       price: '',
       image: '',
-      categoryId: ''
+      categoryId: '',
+      imagePublicId: ''
     })
+  }
+
+  const handleImageUrlChange = (e) => {
+    const url = e.target.value
+    setFormData({ ...formData, image: url, imagePublicId: '' })
+    setImagePreview(url)
+  }
+
+  const handleCloudinaryUpload = () => {
+    openUploadWidget((imageInfo) => {
+      const imageUrl = imageInfo.secure_url;
+      const publicId = imageInfo.public_id;
+      
+      setFormData({
+        ...formData,
+        image: imageUrl,
+        imagePublicId: publicId
+      });
+      setImagePreview(imageUrl);
+    });
   }
 
   // Get summary data
@@ -412,13 +453,34 @@ function Admin() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   תמונה
                 </label>
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  required
-                  className="input-field"
-                />
+                <div className="flex flex-col space-y-2">
+                  <div className="flex space-x-2 space-x-reverse">
+                    <button
+                      type="button"
+                      onClick={handleCloudinaryUpload}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
+                    >
+                      העלה תמונה
+                    </button>
+                    <span className="text-sm text-gray-500 my-auto">או</span>
+                    <input
+                      type="url"
+                      value={formData.image}
+                      onChange={handleImageUrlChange}
+                      className="input-field flex-1"
+                      placeholder="הזן URL של תמונה"
+                    />
+                  </div>
+                  {imagePreview && (
+                    <div className="mt-2">
+                      <img 
+                        src={imagePreview} 
+                        alt="תצוגה מקדימה" 
+                        className="h-24 w-24 object-cover rounded-md border border-gray-300" 
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -462,15 +524,20 @@ function Admin() {
                       description: '',
                       price: '',
                       image: '',
-                      categoryId: ''
+                      categoryId: '',
+                      imagePublicId: ''
                     })
+                    setImagePreview('')
                   }}
                   className="btn-secondary"
                 >
                   ביטול
                 </button>
               )}
-              <button type="submit" className="btn-primary">
+              <button 
+                type="submit" 
+                className="btn-primary"
+              >
                 {editingProduct ? 'עדכן מוצר' : 'הוסף מוצר'}
               </button>
             </div>
@@ -586,7 +653,8 @@ function Admin() {
                       description: '',
                       price: '',
                       image: '',
-                      categoryId: ''
+                      categoryId: '',
+                      imagePublicId: ''
                     })
                   }}
                   className="btn-secondary"

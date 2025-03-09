@@ -1,6 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, get, onValue, push, remove, update } from "firebase/database";
+// Remove Firebase Storage imports since we're not using it
+// import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Your web app's Firebase configuration
 // Replace with your actual Firebase config
@@ -17,6 +19,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+// Remove Storage initialization
+// const storage = getStorage(app);
 
 // Helper function to handle Firebase errors
 const handleFirebaseError = (error, fallbackValue, operation) => {
@@ -29,6 +33,18 @@ const handleFirebaseError = (error, fallbackValue, operation) => {
   }
   
   return fallbackValue;
+};
+
+// Image Upload Functions
+// Note: Since Firebase Storage is not available on the free plan,
+// we're using direct image URLs instead. Consider using services like:
+// - Cloudinary (free tier with 25GB storage)
+// - Imgur API
+// - ImgBB
+// - Or storing images directly in your GitHub repository for small projects
+export const uploadProductImage = async (file, productId) => {
+  console.log(`Image upload functionality is not available with current setup`);
+  throw new Error("Image upload is not implemented. Please use direct image URLs instead.");
 };
 
 // Orders

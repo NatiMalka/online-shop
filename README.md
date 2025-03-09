@@ -11,7 +11,8 @@
 - 📧 שליחת אימייל אישור הזמנה
 - 👨‍💼 לוח בקרה למנהלי החנות
 - 📱 עיצוב רספונסיבי למובייל ודסקטופ
-- 💾 שמירת נתונים ב-localStorage
+- 🖼️ העלאת תמונות מוצרים ישירות מהמחשב באמצעות Cloudinary
+- 💾 שמירת נתונים ב-localStorage ו-Firebase
 
 ## התקנה
 
@@ -27,12 +28,23 @@ npm install
    - העתק את ה-Service ID, Template IDs ו-Public Key לקובץ `src/pages/Checkout.jsx`
    - לפרטים נוספים, ראה את הקובץ `EMAIL_SETUP.md`
 
-3. הפעל את השרת המקומי:
+3. הגדר את Firebase Realtime Database:
+   - ודא שיש לך פרויקט Firebase מוגדר
+   - הפעל את שירות Realtime Database
+   - הגדר את כללי האבטחה של הדאטאבייס
+
+4. הגדר את Cloudinary לאחסון תמונות:
+   - הירשם ל-[Cloudinary](https://cloudinary.com/users/register/free) (חינמי)
+   - צור Upload Preset לתמונות מוצרים
+   - הגדר את פרטי Cloudinary בקובץ `src/utils/cloudinary.js`
+   - לפרטים נוספים, ראה את הקובץ `CLOUDINARY_SETUP.md`
+
+5. הפעל את השרת המקומי:
 ```bash
 npm run dev
 ```
 
-4. פתח את הדפדפן בכתובת המוצגת בטרמינל (בדרך כלל http://localhost:5173)
+6. פתח את הדפדפן בכתובת המוצגת בטרמינל (בדרך כלל http://localhost:5173)
 
 ## שימוש
 
@@ -47,13 +59,28 @@ npm run dev
 1. לחץ על "מצב מנהל" בתפריט העליון
 2. גש ללוח הבקרה
 3. נהל מוצרים וקטגוריות
+   - העלה תמונות מוצרים ישירות מהמחשב באמצעות Cloudinary
+   - או הזן URL של תמונה מהאינטרנט
 4. צפה בהזמנות נכנסות
+
+## אחסון תמונות
+
+האפליקציה משתמשת ב-Cloudinary לאחסון תמונות מוצרים:
+
+- **העלאה קלה**: העלאת תמונות ישירות מהמחשב, מהמצלמה או מ-URL
+- **עיבוד תמונות**: חיתוך ושינוי גודל אוטומטי
+- **אחסון בענן**: אחסון מאובטח בענן עם גישה מהירה
+- **תוכנית חינמית**: עד 25GB אחסון ו-25GB רוחב פס חודשי
+
+לפרטים נוספים על הגדרת Cloudinary, ראה את הקובץ `CLOUDINARY_SETUP.md`
 
 ## טכנולוגיות
 
 - React
 - Tailwind CSS
 - React Router
+- Firebase Realtime Database
+- Cloudinary
 - EmailJS
 - localStorage
 
@@ -63,6 +90,8 @@ npm run dev
 - Vite ככלי בנייה
 - Tailwind CSS לעיצוב
 - React Router לניווט
+- Firebase לאחסון נתונים
+- Cloudinary לאחסון תמונות
 - EmailJS לשליחת אימיילים
 
 ## רישיון
