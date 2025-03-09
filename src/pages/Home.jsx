@@ -245,10 +245,10 @@ function Home() {
             מצאו את המוצרים הטובים ביותר במחירים הטובים ביותר
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/products" className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+            <Link to="/products" className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-all duration-300 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1">
               צפה במוצרים
             </Link>
-            <Link to="/products?category=1" className="bg-transparent text-white border-2 border-white px-6 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors font-medium text-lg">
+            <Link to="/products?category=1" className="bg-transparent text-white border-2 border-white px-6 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition-all duration-300 font-medium text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1">
               קטגוריות פופולריות
             </Link>
           </div>
@@ -280,7 +280,7 @@ function Home() {
                 )}
                 <h3 className="font-bold text-xl mb-2">{category.name}</h3>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2 h-10">{category.description}</p>
-                <span className="inline-block text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-colors">
+                <span className="inline-block text-blue-600 text-sm font-medium group-hover:text-blue-700 transition-all duration-300 transform group-hover:-translate-y-1">
                   צפה במוצרים
                   <span className="inline-block ml-1 transform group-hover:translate-x-1 transition-transform duration-200">←</span>
                 </span>
