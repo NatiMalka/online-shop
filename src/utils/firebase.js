@@ -116,6 +116,19 @@ export const updateOrderStatus = async (orderId, status, firebaseKey) => {
   }
 };
 
+export const deleteOrder = async (firebaseKey) => {
+  console.log(`Deleting order with Firebase key: ${firebaseKey}`);
+  try {
+    const orderRef = ref(database, `orders/${firebaseKey}`);
+    await remove(orderRef);
+    console.log(`Order deleted successfully`);
+    return true;
+  } catch (error) {
+    handleFirebaseError(error, false, "deleteOrder");
+    throw error;
+  }
+};
+
 // Products
 export const saveProducts = (products) => {
   const productsRef = ref(database, 'products');
