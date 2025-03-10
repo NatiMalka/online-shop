@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { getProducts, setProducts, getCategories, setCategories, getOrders, setOrders } from '../utils/storage'
-import { listenToOrders, updateOrderStatus, getOrdersOnce, deleteOrder } from '../utils/firebase'
+import { listenToOrders, updateOrderStatus, getOrdersOnce, deleteOrder, saveProducts, saveCategories } from '../utils/firebase'
 import { openUploadWidget, getPublicIdFromUrl } from '../utils/cloudinary'
 // Import icons for category selection
 import { 
@@ -440,77 +440,87 @@ function Admin() {
     e.preventDefault()
     
     try {
-      // Create a new product object
-      let newProduct = {
-        id: editingProduct?.id || Date.now().toString(),
-        ...formData,
-        price: parseFloat(formData.price)
+      let updatedProducts
+      
+      if (editingProduct) {
+        // Update existing product
+        updatedProducts = products.map(p => 
+          p.id === editingProduct.id ? { ...formData, id: p.id } : p
+        )
+      } else {
+        // Add new product
+        const newId = (Math.max(0, ...products.map(p => parseInt(p.id))) + 1).toString()
+        updatedProducts = [...products, { ...formData, id: newId }]
       }
       
-      const updatedProducts = editingProduct
-        ? products.map(p => p.id === editingProduct.id ? newProduct : p)
-        : [...products, newProduct]
-
+      // Save to localStorage
       setProducts(updatedProducts)
+      // Also save to Firebase
+      await saveProducts(updatedProducts)
+      
       setProductsState(updatedProducts)
+      resetForm()
       setEditingProduct(null)
-      setFormData({
-        name: '',
-        description: '',
-        price: '',
-        image: '',
-        categoryId: '',
-        imagePublicId: ''
-      })
-      setImagePreview('')
     } catch (error) {
-      console.error("Error submitting product:", error)
-      alert("שגיאה בשמירת המוצר. אנא נסה שנית.")
+      console.error("Error saving product:", error)
+      setFirebaseError(error.message)
     }
   }
 
   const handleCategorySubmit = (e) => {
     e.preventDefault()
-    const newCategory = {
-      id: editingCategory?.id || Date.now().toString(),
-      name: formData.name,
-      description: formData.description,
-      iconName: formData.iconName || 'FaUtensils', // Add icon name to category
-      showIcon: formData.showIcon // Add showIcon field
+    
+    try {
+      let updatedCategories
+      
+      if (editingCategory) {
+        // Update existing category
+        updatedCategories = categories.map(c => 
+          c.id === editingCategory.id ? { ...formData, id: c.id } : c
+        )
+      } else {
+        // Add new category
+        const newId = (Math.max(0, ...categories.map(c => parseInt(c.id))) + 1).toString()
+        updatedCategories = [...categories, { ...formData, id: newId }]
+      }
+      
+      // Save to localStorage
+      setCategories(updatedCategories)
+      // Also save to Firebase
+      saveCategories(updatedCategories)
+      
+      setCategoriesState(updatedCategories)
+      resetForm()
+      setEditingCategory(null)
+    } catch (error) {
+      console.error("Error saving category:", error)
+      setFirebaseError(error.message)
     }
-
-    const updatedCategories = editingCategory
-      ? categories.map(c => c.id === editingCategory.id ? newCategory : c)
-      : [...categories, newCategory]
-
-    setCategories(updatedCategories)
-    setCategoriesState(updatedCategories)
-    setEditingCategory(null)
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      image: '',
-      categoryId: '',
-      imagePublicId: '',
-      iconName: 'FaUtensils', // Reset to default icon
-      showIcon: true // Reset to showing icon
-    })
   }
 
   const handleDeleteProduct = (productId) => {
-    if (window.confirm('האם אתה בטוח שברצונך למחוק מוצר זה?')) {
+    try {
       const updatedProducts = products.filter(p => p.id !== productId)
       setProducts(updatedProducts)
+      // Also save to Firebase
+      saveProducts(updatedProducts)
       setProductsState(updatedProducts)
+    } catch (error) {
+      console.error("Error deleting product:", error)
+      setFirebaseError(error.message)
     }
   }
 
   const handleDeleteCategory = (categoryId) => {
-    if (window.confirm('האם אתה בטוח שברצונך למחוק קטגוריה זו?')) {
+    try {
       const updatedCategories = categories.filter(c => c.id !== categoryId)
       setCategories(updatedCategories)
+      // Also save to Firebase
+      saveCategories(updatedCategories)
       setCategoriesState(updatedCategories)
+    } catch (error) {
+      console.error("Error deleting category:", error)
+      setFirebaseError(error.message)
     }
   }
 

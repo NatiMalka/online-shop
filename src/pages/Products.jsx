@@ -1,18 +1,41 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getProducts, getCategories, addToCart } from '../utils/storage'
+import { listenToProducts, listenToCategories } from '../utils/firebase'
 import { useToast } from '../context/ToastContext'
 
 function Products() {
   const [searchParams] = useSearchParams()
   const [products, setProducts] = useState([])
-  const [categories] = useState(getCategories())
+  const [allProducts, setAllProducts] = useState(getProducts())
+  const [categories, setCategories] = useState(getCategories())
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '')
   const [searchQuery, setSearchQuery] = useState('')
   const { showToast } = useToast()
 
   useEffect(() => {
-    let filteredProducts = getProducts()
+    // Set up real-time listeners for products and categories
+    const unsubscribeProducts = listenToProducts((firebaseProducts) => {
+      if (firebaseProducts && firebaseProducts.length > 0) {
+        setAllProducts(firebaseProducts);
+      }
+    });
+    
+    const unsubscribeCategories = listenToCategories((firebaseCategories) => {
+      if (firebaseCategories && firebaseCategories.length > 0) {
+        setCategories(firebaseCategories);
+      }
+    });
+    
+    // Clean up listeners on component unmount
+    return () => {
+      unsubscribeProducts();
+      unsubscribeCategories();
+    };
+  }, []);
+
+  useEffect(() => {
+    let filteredProducts = allProducts;
 
     // Filter by category
     if (selectedCategory) {
@@ -31,7 +54,7 @@ function Products() {
     }
 
     setProducts(filteredProducts)
-  }, [selectedCategory, searchQuery])
+  }, [selectedCategory, searchQuery, allProducts])
 
   const handleAddToCart = (product) => {
     // Create a ripple effect on the button that was clicked

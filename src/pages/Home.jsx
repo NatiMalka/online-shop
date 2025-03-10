@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getProducts, getCategories, addToCart } from '../utils/storage'
+import { listenToProducts, listenToCategories } from '../utils/firebase'
 import { useToast } from '../context/ToastContext'
 
 // Import icons for categories
@@ -48,10 +49,36 @@ import {
 } from 'react-icons/fa'
 
 function Home() {
-  const products = getProducts()
-  const categories = getCategories()
-  const featuredProducts = products.slice(0, 4)
+  const [products, setProducts] = useState(getProducts())
+  const [categories, setCategories] = useState(getCategories())
+  const [featuredProducts, setFeaturedProducts] = useState([])
   const { showToast } = useToast()
+
+  useEffect(() => {
+    // Set up real-time listeners for products and categories
+    const unsubscribeProducts = listenToProducts((firebaseProducts) => {
+      if (firebaseProducts && firebaseProducts.length > 0) {
+        setProducts(firebaseProducts);
+      }
+    });
+    
+    const unsubscribeCategories = listenToCategories((firebaseCategories) => {
+      if (firebaseCategories && firebaseCategories.length > 0) {
+        setCategories(firebaseCategories);
+      }
+    });
+    
+    // Clean up listeners on component unmount
+    return () => {
+      unsubscribeProducts();
+      unsubscribeCategories();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Update featured products when products change
+    setFeaturedProducts(products.slice(0, 4));
+  }, [products]);
 
   // Map of all available icons
   const iconComponents = {
