@@ -370,7 +370,7 @@ function Admin() {
   // Calculate summary statistics
   const calculateSummary = () => {
     // Check if orders is undefined or null
-    if (!orders) {
+    if (!orders || !Array.isArray(orders)) {
       return {
         totalOrders: 0,
         totalIncome: 0,
@@ -382,28 +382,45 @@ function Admin() {
     }
     
     const totalOrders = orders.length
-    const totalIncome = orders.reduce((sum, order) => sum + parseFloat(order.total), 0)
-    const completedOrders = orders.filter(order => order.status === 'הושלם').length
-    const inProcessOrders = orders.filter(order => order.status === 'בתהליך').length
-    const newOrders = orders.filter(order => order.status === 'חדש').length
+    
+    // Safely calculate total income
+    const totalIncome = orders.reduce((sum, order) => {
+      if (!order || !order.total) return sum;
+      const orderTotal = parseFloat(order.total) || 0;
+      return sum + orderTotal;
+    }, 0)
+    
+    // Safely count orders by status
+    const completedOrders = orders.filter(order => order && order.status === 'הושלם').length
+    const inProcessOrders = orders.filter(order => order && order.status === 'בתהליך').length
+    const newOrders = orders.filter(order => order && order.status === 'חדש').length
     
     const productSales = {}
+    
+    // Safely process order items
     orders.forEach(order => {
-      // Check if order.items exists before using forEach
-      if (order.items) {
+      // Skip if order is undefined or null
+      if (!order) return;
+      
+      // Check if order.items exists and is an array before using forEach
+      if (order.items && Array.isArray(order.items)) {
         order.items.forEach(item => {
-          if (!productSales[item.id]) {
-            productSales[item.id] = { 
-              name: item.name, 
+          // Skip if item is undefined or null
+          if (!item) return;
+          
+          const itemId = item.id || 'unknown';
+          if (!productSales[itemId]) {
+            productSales[itemId] = { 
+              name: item.name || 'Unknown Product', 
               quantity: 0, 
               total: 0 
             }
           }
-          productSales[item.id].quantity += item.quantity
-          productSales[item.id].total += Math.round(item.price * item.quantity)
-        })
+          productSales[itemId].quantity += item.quantity || 0;
+          productSales[itemId].total += Math.round((item.price || 0) * (item.quantity || 0));
+        });
       }
-    })
+    });
     
     const topProducts = Object.values(productSales)
       .sort((a, b) => b.quantity - a.quantity)
@@ -1348,7 +1365,7 @@ function Admin() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {summary?.topProducts.map((product, index) => (
+                  {(summary?.topProducts || []).map((product, index) => (
                     <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -1356,16 +1373,16 @@ function Admin() {
                             <span className="text-indigo-600 font-bold">{index + 1}</span>
                           </div>
                           <div className="mr-4">
-                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                            <div className="text-sm font-medium text-gray-900">{product?.name || 'Unknown Product'}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 font-semibold">{product.quantity}</div>
+                        <div className="text-sm text-gray-900 font-semibold">{product?.quantity || 0}</div>
                         <div className="text-xs text-gray-500">יחידות</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-bold text-emerald-600">₪{product.total}</div>
+                        <div className="text-sm font-bold text-emerald-600">₪{product?.total || 0}</div>
                       </td>
                     </tr>
                   ))}
