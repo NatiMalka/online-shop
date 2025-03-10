@@ -690,7 +690,7 @@ function Admin() {
       {/* Products Tab */}
       {activeTab === 'products' && (
         <div className="space-y-8">
-          <form onSubmit={handleProductSubmit} className="bg-white p-6 rounded-lg shadow-md">
+          <form onSubmit={handleProductSubmit} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold mb-4">
               {editingProduct ? 'עריכת מוצר' : 'הוספת מוצר חדש'}
             </h3>
@@ -724,7 +724,7 @@ function Admin() {
                   תמונה
                 </label>
                 <div className="flex flex-col space-y-2">
-                  <div className="flex space-x-2 space-x-reverse">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 sm:space-x-reverse">
                     <button
                       type="button"
                       onClick={handleCloudinaryUpload}
@@ -732,7 +732,7 @@ function Admin() {
                     >
                       העלה תמונה
                     </button>
-                    <span className="text-sm text-gray-500 my-auto">או</span>
+                    <span className="text-sm text-gray-500 hidden sm:block my-auto">או</span>
                     <input
                       type="url"
                       value={formData.image}
@@ -803,67 +803,69 @@ function Admin() {
           </form>
 
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    שם
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    מחיר
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    קטגוריה
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    פעולות
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {products.map(product => (
-                  <tr key={product.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                        <div className="mr-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {product.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {product.description}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      שם
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      מחיר
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      קטגוריה
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      פעולות
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {products.map(product => (
+                    <tr key={product.id}>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                          <div className="mr-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {product.name}
+                            </div>
+                            <div className="text-sm text-gray-500 max-w-xs truncate">
+                              {product.description}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ₪{product.price}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {categories.find(c => c.id === product.categoryId)?.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleEditProduct(product)}
-                        className="text-blue-600 hover:text-blue-900 ml-4"
-                      >
-                        ערוך
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProduct(product.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        מחק
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        ₪{product.price}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {categories.find(c => c.id === product.categoryId)?.name}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium">
+                        <button
+                          onClick={() => handleEditProduct(product)}
+                          className="text-blue-600 hover:text-blue-900 ml-4"
+                        >
+                          ערוך
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          מחק
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -871,7 +873,7 @@ function Admin() {
       {/* Categories Tab */}
       {activeTab === 'categories' && (
         <div className="space-y-8">
-          <form onSubmit={handleCategorySubmit} className="bg-white p-6 rounded-lg shadow-md">
+          <form onSubmit={handleCategorySubmit} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold mb-4">
               {editingCategory ? 'עריכת קטגוריה' : 'הוספת קטגוריה חדשה'}
             </h3>
@@ -940,8 +942,8 @@ function Admin() {
             
             {/* Icon Selector Popup */}
             {showIconSelector && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg p-4 sm:p-6 max-w-3xl w-full max-h-[80vh] overflow-y-auto">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold">בחר אייקון לקטגוריה</h3>
                     <button
@@ -976,7 +978,7 @@ function Admin() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
                     {filteredIcons.map((icon) => (
                       <div
                         key={icon.name}
@@ -989,9 +991,9 @@ function Admin() {
                           formData.iconName === icon.name
                             ? 'bg-blue-100 text-blue-600 border-2 border-blue-500'
                             : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                        } min-w-[48px] min-h-[48px]`}
+                        } min-w-[40px] min-h-[40px]`}
                       >
-                        <div className="text-2xl flex items-center justify-center">
+                        <div className="text-xl flex items-center justify-center">
                           {icon.component}
                         </div>
                       </div>
@@ -1000,7 +1002,7 @@ function Admin() {
                   
                   {filteredIcons.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
-                      לא נמצאו אייקונים התואמים לחיפוש
+                      לא נמצאו אייקונים התואמים את החיפוש
                     </div>
                   )}
                 </div>
@@ -1024,110 +1026,99 @@ function Admin() {
           </form>
 
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    שם
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    תיאור
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    אייקון
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    הצגת אייקון
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    פעולות
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {categories.map(category => (
-                  <tr key={category.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {category.name}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {category.description}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-xl text-gray-700 flex justify-center">
-                        {availableIcons.find(icon => icon.name === (category.iconName || 'FaUtensils'))?.component || 
-                         availableIcons.find(icon => icon.name === 'FaUtensils')?.component}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="text-sm text-gray-500">
-                        {category.showIcon === false ? 'לא' : 'כן'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleEditCategory(category)}
-                        className="text-blue-600 hover:text-blue-900 ml-4"
-                      >
-                        ערוך
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCategory(category.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        מחק
-                      </button>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      שם
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      תיאור
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      פעולות
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {categories.map(category => (
+                    <tr key={category.id}>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <div className="flex items-center">
+                          {category.showIcon !== false && category.iconName && (
+                            <div className="text-xl text-blue-600 ml-2">
+                              {availableIcons.find(icon => icon.name === category.iconName)?.component}
+                            </div>
+                          )}
+                          <span>{category.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                        <div className="truncate">
+                          {category.description}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium">
+                        <button
+                          onClick={() => handleEditCategory(category)}
+                          className="text-blue-600 hover:text-blue-900 ml-4"
+                        >
+                          ערוך
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          מחק
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
 
       {/* Orders Tab */}
       {activeTab === 'orders' && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap justify-between items-center gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="חיפוש לפי מספר הזמנה"
-                  value={orderSearchQuery}
-                  onChange={(e) => setOrderSearchQuery(e.target.value)}
-                  className="border rounded-md px-4 py-2 text-sm w-48 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                {orderSearchQuery && (
-                  <button 
-                    onClick={() => setOrderSearchQuery('')}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-              <select 
-                value={orderStatusFilter} 
-                onChange={(e) => setOrderStatusFilter(e.target.value)}
-                className="border rounded-md px-3 py-2 text-sm"
-              >
-                <option value="all">כל הסטטוסים</option>
-                <option value="חדש">חדש</option>
-                <option value="בתהליך">בתהליך</option>
-                <option value="הושלם">הושלם</option>
-              </select>
+        <div className="space-y-6">
+          {/* Filters */}
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="relative w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="חיפוש לפי מספר הזמנה"
+                value={orderSearchQuery}
+                onChange={(e) => setOrderSearchQuery(e.target.value)}
+                className="border rounded-md px-4 py-2 text-sm w-full sm:w-48 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {orderSearchQuery && (
+                <button 
+                  onClick={() => setOrderSearchQuery('')}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              )}
             </div>
+            <select 
+              value={orderStatusFilter} 
+              onChange={(e) => setOrderStatusFilter(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm w-full sm:w-auto"
+            >
+              <option value="all">כל הסטטוסים</option>
+              <option value="חדש">חדש</option>
+              <option value="בתהליך">בתהליך</option>
+              <option value="הושלם">הושלם</option>
+            </select>
             
             {/* Refresh Button */}
             <button
               onClick={() => loadData()}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md text-sm flex items-center"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md text-sm flex items-center w-full sm:w-auto justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -1137,111 +1128,108 @@ function Admin() {
           </div>
           
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th 
-                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleOrderSort('id')}
-                  >
-                    מספר הזמנה
-                    {orderSort.field === 'id' && (
-                      <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </th>
-                  <th 
-                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleOrderSort('name')}
-                  >
-                    לקוח
-                    {orderSort.field === 'name' && (
-                      <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </th>
-                  <th 
-                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleOrderSort('date')}
-                  >
-                    תאריך משלוח
-                    {orderSort.field === 'date' && (
-                      <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </th>
-                  <th 
-                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleOrderSort('total')}
-                  >
-                    סכום
-                    {orderSort.field === 'total' && (
-                      <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    סטטוס
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    פעולות
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {getSortedOrders().length > 0 ? (
-                  getSortedOrders().map(order => (
-                    <tr key={order.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {order.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{order.name}</div>
-                        <div className="text-sm text-gray-500">{order.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(order.deliveryDate).toLocaleDateString('he-IL')}
-                        <br />
-                        {order.deliveryTime}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ₪{Math.round(order.total)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleOrderStatusChange(order.id, e.target.value, order.firebaseKey)}
-                          className={`px-2 py-1 text-xs leading-5 font-semibold rounded-full ${
-                            order.status === 'חדש' 
-                              ? 'bg-yellow-100 text-yellow-800' 
-                              : order.status === 'בתהליך' 
-                                ? 'bg-blue-100 text-blue-800' 
-                                : 'bg-green-100 text-green-800'
-                          }`}
-                        >
-                          <option value="חדש">חדש</option>
-                          <option value="בתהליך">בתהליך</option>
-                          <option value="הושלם">הושלם</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleDeleteOrder(order.id, order.firebaseKey)}
-                          className="text-red-600 hover:text-red-900 transition-colors duration-200"
-                          title="מחק הזמנה"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th 
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleOrderSort('id')}
+                    >
+                      מספר הזמנה
+                      {orderSort.field === 'id' && (
+                        <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleOrderSort('name')}
+                    >
+                      לקוח
+                      {orderSort.field === 'name' && (
+                        <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleOrderSort('date')}
+                    >
+                      תאריך משלוח
+                      {orderSort.field === 'date' && (
+                        <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleOrderSort('total')}
+                    >
+                      סכום
+                      {orderSort.field === 'total' && (
+                        <span className="mr-1">{orderSort.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      סטטוס
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      פעולות
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {getSortedOrders().length > 0 ? (
+                    getSortedOrders().map(order => (
+                      <tr key={order.id}>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          {order.id}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">{order.name}</div>
+                          <div className="text-sm text-gray-500">{order.email}</div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {new Date(order.deliveryDate).toLocaleDateString('he-IL')}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                          ₪{order.total.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <select
+                            value={order.status || 'חדש'}
+                            onChange={(e) => handleOrderStatusChange(order.id, e.target.value, order.firebaseKey)}
+                            className={`text-sm rounded-full px-3 py-1 font-medium ${
+                              order.status === 'הושלם'
+                                ? 'bg-green-100 text-green-800'
+                                : order.status === 'בתהליך'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-blue-100 text-blue-800'
+                            }`}
+                          >
+                            <option value="חדש">חדש</option>
+                            <option value="בתהליך">בתהליך</option>
+                            <option value="הושלם">הושלם</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium">
+                          <button
+                            onClick={() => handleDeleteOrder(order.id, order.firebaseKey)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            מחק
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                        אין הזמנות להצגה
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                      {orderSearchQuery ? 'לא נמצאו הזמנות התואמות את החיפוש' : 'אין הזמנות להצגה'}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -1377,7 +1365,7 @@ function Admin() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {(summary?.topProducts || []).map((product, index) => (
                     <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
                             <span className="text-indigo-600 font-bold">{index + 1}</span>
