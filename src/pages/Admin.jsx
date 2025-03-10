@@ -369,6 +369,18 @@ function Admin() {
 
   // Calculate summary statistics
   const calculateSummary = () => {
+    // Check if orders is undefined or null
+    if (!orders) {
+      return {
+        totalOrders: 0,
+        totalIncome: 0,
+        completedOrders: 0,
+        inProcessOrders: 0,
+        newOrders: 0,
+        topProducts: []
+      }
+    }
+    
     const totalOrders = orders.length
     const totalIncome = orders.reduce((sum, order) => sum + parseFloat(order.total), 0)
     const completedOrders = orders.filter(order => order.status === 'הושלם').length
@@ -377,17 +389,20 @@ function Admin() {
     
     const productSales = {}
     orders.forEach(order => {
-      order.items.forEach(item => {
-        if (!productSales[item.id]) {
-          productSales[item.id] = { 
-            name: item.name, 
-            quantity: 0, 
-            total: 0 
+      // Check if order.items exists before using forEach
+      if (order.items) {
+        order.items.forEach(item => {
+          if (!productSales[item.id]) {
+            productSales[item.id] = { 
+              name: item.name, 
+              quantity: 0, 
+              total: 0 
+            }
           }
-        }
-        productSales[item.id].quantity += item.quantity
-        productSales[item.id].total += Math.round(item.price * item.quantity)
-      })
+          productSales[item.id].quantity += item.quantity
+          productSales[item.id].total += Math.round(item.price * item.quantity)
+        })
+      }
     })
     
     const topProducts = Object.values(productSales)
@@ -542,8 +557,8 @@ function Admin() {
         icon.name.toLowerCase().includes(iconSearchQuery.toLowerCase()))
     : availableIcons
 
-  // Get summary data
-  const summary = calculateSummary()
+  // Get summary data only when needed
+  const summary = activeTab === 'orders' ? calculateSummary() : null
 
   const resetForm = () => {
     setEditingProduct(null)
@@ -1222,24 +1237,24 @@ function Admin() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">סה"כ הזמנות:</span>
-                  <span className="text-xl font-bold text-indigo-800">{summary.totalOrders}</span>
+                  <span className="text-xl font-bold text-indigo-800">{summary?.totalOrders || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">הזמנות חדשות:</span>
                   <div className="flex items-center">
-                    <span className="text-lg font-bold text-green-600">{summary.newOrders}</span>
-                    {summary.newOrders > 0 && (
+                    <span className="text-lg font-bold text-green-600">{summary?.newOrders || 0}</span>
+                    {summary?.newOrders > 0 && (
                       <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">חדש</span>
                     )}
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">הזמנות בתהליך:</span>
-                  <span className="text-lg font-bold text-yellow-600">{summary.inProcessOrders}</span>
+                  <span className="text-lg font-bold text-yellow-600">{summary?.inProcessOrders || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">הזמנות שהושלמו:</span>
-                  <span className="text-lg font-bold text-blue-600">{summary.completedOrders}</span>
+                  <span className="text-lg font-bold text-blue-600">{summary?.completedOrders || 0}</span>
                 </div>
               </div>
             </div>
@@ -1257,13 +1272,13 @@ function Admin() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">סה"כ הכנסות:</span>
-                  <span className="text-xl font-bold text-teal-800">₪{Math.round(summary.totalIncome)}</span>
+                  <span className="text-xl font-bold text-teal-800">₪{Math.round(summary?.totalIncome || 0)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">ממוצע להזמנה:</span>
                   <span className="text-lg font-bold text-teal-700">
-                    ₪{summary.totalOrders > 0 
-                      ? Math.round(summary.totalIncome / summary.totalOrders) 
+                    ₪{summary?.totalOrders > 0 
+                      ? Math.round(summary?.totalIncome / summary?.totalOrders) 
                       : '0'}
                   </span>
                 </div>
@@ -1271,7 +1286,7 @@ function Admin() {
                   <div className="text-center">
                     <span className="text-sm text-teal-700">הכנסה חודשית משוערת</span>
                     <div className="text-2xl font-bold text-teal-800 mt-1">
-                      ₪{Math.round(summary.totalIncome / (summary.totalOrders ? summary.totalOrders : 1) * 30)}
+                      ₪{Math.round(summary?.totalIncome / (summary?.totalOrders ? summary?.totalOrders : 1) * 30)}
                     </div>
                   </div>
                 </div>
@@ -1333,7 +1348,7 @@ function Admin() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {summary.topProducts.map((product, index) => (
+                  {summary?.topProducts.map((product, index) => (
                     <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">

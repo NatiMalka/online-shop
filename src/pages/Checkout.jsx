@@ -1,18 +1,31 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCart, setOrders, clearCart } from '../utils/storage'
-import { saveOrder } from '../utils/firebase'
+import { saveOrder, getOrdersOnce } from '../utils/firebase'
 import emailjs from '@emailjs/browser'
 import { useToast } from '../context/ToastContext'
 
 // Function to get the next order number
-const getNextOrderNumber = () => {
+const getNextOrderNumber = async () => {
   // Get the current highest order number from localStorage
-  const orders = JSON.parse(localStorage.getItem('store_orders') || '[]')
+  const localOrders = JSON.parse(localStorage.getItem('store_orders') || '[]')
+  
+  // Get orders from Firebase
+  let firebaseOrders = []
+  try {
+    // Import the getOrdersOnce function if not already imported
+    const { getOrdersOnce } = await import('../utils/firebase')
+    firebaseOrders = await getOrdersOnce()
+  } catch (error) {
+    console.error("Error fetching orders from Firebase:", error)
+  }
+  
+  // Combine orders from both sources
+  const allOrders = [...localOrders, ...firebaseOrders]
   
   // Find the highest order number
   let highestNumber = 0
-  orders.forEach(order => {
+  allOrders.forEach(order => {
     // Extract the number from the order ID (format: "ORDER-123")
     const match = order.id && order.id.match(/ORDER-(\d+)/)
     if (match && match[1]) {
@@ -63,22 +76,22 @@ function Checkout() {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Get the next order number
-    const orderNumber = getNextOrderNumber()
-    console.log("Generated order number:", orderNumber);
-    
-    // Create order object with readable ID
-    const order = {
-      id: `ORDER-${orderNumber}`,
-      items: cartItems,
-      total,
-      ...formData,
-      status: 'חדש', // Set initial status to 'חדש' (new)
-      createdAt: new Date().toISOString()
-    }
-    console.log("Created order with ID:", order.id);
-
     try {
+      // Get the next order number
+      const orderNumber = await getNextOrderNumber()
+      console.log("Generated order number:", orderNumber);
+      
+      // Create order object with readable ID
+      const order = {
+        id: `ORDER-${orderNumber}`,
+        items: cartItems,
+        total,
+        ...formData,
+        status: 'חדש', // Set initial status to 'חדש' (new)
+        createdAt: new Date().toISOString()
+      }
+      console.log("Created order with ID:", order.id);
+
       console.log("Submitting order:", order);
       
       // Save order to Firebase (for real-time updates)
